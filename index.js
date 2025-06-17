@@ -23,7 +23,6 @@ app.use("/shop/auth", require("./routes/shop/shopAuthroutes"));
 app.use('/shop/notes', require('./routes/shop/ShotNoteRoutes'));
 // photo
 app.use('/shop/gallery', require('./routes/shop/GalleryRoutes'));
-app.use('/shop/offer', require('./routes/shop/OfferRoutes'));
 // user
 app.use('/user/auth', require('./routes/user/userAuthRoutes'));
 app.use('/user/address', require('./routes/user/userAddressRoutes'));
@@ -34,6 +33,7 @@ app.use('/delivery/auth', require('./routes/deliveryboyroutes/DeliveryBoyRoutes'
 app.use('/admin/categories', require('./routes/admin/serviceRoutes'));
 app.use('/admin/subcategories', require('./routes/admin/ProductRoutes'));
 app.use('/admin/auth', require('./routes/admin/authRoutes'));
+app.use('/admin/offer', require('./routes/admin/OfferRoutes'));
 
 mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,

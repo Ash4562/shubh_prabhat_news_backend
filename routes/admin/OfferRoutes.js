@@ -2,7 +2,7 @@ const express = require('express');
 // const upload = require('../../middlewares/multer');
 
 const upload = require('../../middleware/multer');
-const { addoffer, getoffer, updateoffer, deleteoffer, approveOffer, getPendingOffers, getApprovedOffers, getApprovedOffersByShop,  rejectedOffer, addofferbyAdmin, getRejectedOffersByShop, getPendingOffersByShop } = require('../../controller/shop/OfferController');
+const { addoffer, getoffer, updateoffer, deleteoffer, approveOffer, getPendingOffers, getApprovedOffers, getApprovedOffersByShop,  rejectedOffer, getRejectedOffersByShop, getPendingOffersByShop, addofferbyAdmin } = require('../../controller/admin/OfferController');
 const router = express.Router();
 
 router.get('/all', getoffer);

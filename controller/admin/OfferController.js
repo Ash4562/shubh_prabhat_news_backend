@@ -1,24 +1,33 @@
 
-const AddOffer = require('../../models/shop/AddOfferr');
+const AddOffer = require('../../models/admin/AddOfferr');
 const cloudinary = require('../../utils/cloudinary');
 
-// const Banner = require("../../models/adminModel/Banner");
+
 
 // 📤 Add Banner
 exports.addofferbyAdmin = async (req, res) => {
   try {
     const result = await cloudinary.uploader.upload(req.file.path);
 
+    const { MainHeadline, Subheadline, Description } = req.body;
+
+    if (!MainHeadline || !Subheadline || !Description) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
     const banner = new AddOffer({
       image: result.secure_url,
-      status: "approved" // Status field added here
+      MainHeadline: MainHeadline.trim(),
+      Subheadline: Subheadline.trim(),
+      Description: Description.trim(),
+      status: "approved"
     });
 
     await banner.save();
 
     res.status(201).json({
       success: true,
-      message: 'Banner added and approved',
+      message: 'Blogs added and approved',
       data: banner
     });
   } catch (err) {
@@ -29,6 +38,7 @@ exports.addofferbyAdmin = async (req, res) => {
     });
   }
 };
+
 
 
 exports.addoffer = async (req, res) => {

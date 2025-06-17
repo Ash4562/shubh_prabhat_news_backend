@@ -21,6 +21,9 @@ const offerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  MainHeadline: { type: String, required: true },
+  Subheadline: { type: String, required: true },
+  Description: { type: String, required: true },
   status: {
     type: String,
     enum: ['pending', 'approved',"rejected"],
