@@ -32,6 +32,46 @@
 // module.exports = mongoose.model('Product', mainProductSchema);
 
 
+// const mongoose = require('mongoose');
+
+// const ProductSchema = new mongoose.Schema({
+//   service: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'Service',
+//     required: true,
+//   },
+//   subcategories: [
+//     {
+//       _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Not required, but fine if you want to be explicit
+//       name: { type: String, required: true },
+//       products: [
+//         {
+//           _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Again, not required — Mongoose does this automatically
+//           MainHeadline: { type: String, required: true },
+//           Subheadline: { type: String, required: true },
+//           Description: { type: String, required: true },
+//           image: { type: String, required: true },
+//           reporterId: {
+//             type: mongoose.Schema.Types.ObjectId,
+//             ref: 'Reporter',
+//             // required: true
+//           },
+//           status: {
+//             type: String,
+//             enum: ['pending', 'approved', 'rejected'],
+//             default: 'pending'
+//           }
+//         },
+        
+//       ],
+//     },
+//   ],
+// });
+
+// module.exports = mongoose.model('Product', ProductSchema);
+
+
+
 const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
@@ -42,15 +82,25 @@ const ProductSchema = new mongoose.Schema({
   },
   subcategories: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Not required, but fine if you want to be explicit
+      _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
       name: { type: String, required: true },
       products: [
         {
-          _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Again, not required — Mongoose does this automatically
+          _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
           MainHeadline: { type: String, required: true },
           Subheadline: { type: String, required: true },
           Description: { type: String, required: true },
           image: { type: String, required: true },
+          reporterId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Reporter',
+            // required: true
+          },
+          status: {
+            type: String,
+            enum: ['pending', 'approved', 'rejected'],
+            default: 'pending'
+          }
         },
       ],
     },

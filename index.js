@@ -10,16 +10,16 @@ app.use(cors({
     origin: [
         "http://localhost:5173",
         "http://localhost:5174",
-        "https://planet-wash-site.onrender.com",
-        "https://admin.planetwash.in",
+        "https://shubhprabhat-admin-panel.onrender.com",
+ 
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 }));
 app.use("/shop/contactus", require("./routes/conatct/ContantusRoutes"));
 app.use("/shop/pickup", require("./routes/conatct/PickupRoutes"));
-// shop
-app.use("/shop/auth", require("./routes/shop/shopAuthroutes"));
+// reporter
+app.use("/reporter/auth", require("./routes/shop/shopAuthroutes"));
 app.use('/shop/notes', require('./routes/shop/ShotNoteRoutes'));
 // photo
 app.use('/shop/gallery', require('./routes/shop/GalleryRoutes'));

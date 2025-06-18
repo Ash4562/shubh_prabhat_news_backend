@@ -54,7 +54,74 @@ const Product = require("../../models/admin/Product");
 //   }
 // };
 
+exports.createProductByReporter = async (req, res) => {
+  try {
+    const { serviceId, subcategoryId, MainHeadline, Subheadline, Description, reporterId } = req.body;
 
+    if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description || !reporterId || !req.file) {
+      return res.status(400).json({ error: 'All fields are required including reporterId and image' });
+    }
+
+    const productData = {
+      MainHeadline: MainHeadline.trim(),
+      Subheadline: Subheadline.trim(),
+      Description: Description.trim(),
+      image: req.file.path,
+      reporterId,
+      status: 'pending' // default status
+    };
+
+    // Check if main product entry exists for this service
+    let mainProduct = await Product.findOne({ service: serviceId });
+
+    if (!mainProduct) {
+      return res.status(404).json({ error: 'Main product not found for this service' });
+    }
+
+    // Find subcategory inside that document
+    const subcategory = mainProduct.subcategories.id(subcategoryId);
+    if (!subcategory) {
+      return res.status(404).json({ error: 'Subcategory not found' });
+    }
+
+    // Add new product to subcategory
+    subcategory.products.push(productData);
+    await mainProduct.save();
+
+    res.status(201).json({ message: 'Product added successfully and pending approval', product: mainProduct });
+  } catch (err) {
+    console.error('Create Product Error:', err);
+    res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+
+exports.updateProductStatus = async (req, res) => {
+  try {
+    const { serviceId, subcategoryId, productId } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    const mainProduct = await Product.findOne({ service: serviceId });
+    if (!mainProduct) return res.status(404).json({ error: 'Service not found' });
+
+    const subcategory = mainProduct.subcategories.id(subcategoryId);
+    if (!subcategory) return res.status(404).json({ error: 'Subcategory not found' });
+
+    const product = subcategory.products.id(productId);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    product.status = status;
+    await mainProduct.save();
+
+    res.status(200).json({ message: `Product status updated to ${status}`, product });
+  } catch (error) {
+    console.error('Update product status error:', error);
+    res.status(500).json({ error: 'Failed to update product status' });
+  }
+};
 
 exports.createProduct = async (req, res) => {
   try {
@@ -68,7 +135,8 @@ exports.createProduct = async (req, res) => {
       MainHeadline: MainHeadline.trim(),
       Subheadline: Subheadline.trim(),
       Description: Description.trim(),
-      image: req.file.path
+      image: req.file.path,   
+       status: 'approved' // default status
     };
 
     // Check if main Product exists for this service
@@ -96,6 +164,9 @@ exports.createProduct = async (req, res) => {
     res.status(500).json({ error: 'Failed to create product' });
   }
 };
+
+
+
 
 
 
@@ -197,6 +268,24 @@ exports.createOnlySubcategory = async (req, res) => {
   }
 };
 
+// 📥 Get All Subcategories (Across All Products)
+exports.getAllSubcategories = async (req, res) => {
+  try {
+    const products = await Product.find({}, 'subcategories'); // fetch only subcategories
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: 'No subcategories found' });
+    }
+
+    // Flatten subcategories from all products
+    const allSubcategories = products.flatMap(product => product.subcategories || []);
+
+    res.status(200).json({ subcategories: allSubcategories });
+  } catch (err) {
+    console.error('Error fetching all subcategories:', err);
+    res.status(500).json({ error: 'Failed to fetch all subcategories' });
+  }
+};
 
 
 // 📥 Get All Products by Service ID
