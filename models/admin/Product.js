@@ -80,10 +80,13 @@ const ProductSchema = new mongoose.Schema({
     ref: 'Service',
     required: true,
   },
+  
   subcategories: [
     {
       _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
       name: { type: String, required: true },
+      date: { type: Date, default: Date.now },
+
       products: [
         {
           _id: { type: mongoose.Schema.Types.ObjectId, auto: true },

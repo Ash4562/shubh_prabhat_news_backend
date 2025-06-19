@@ -186,23 +186,21 @@ exports.createProduct = async (req, res) => {
 
 exports.addSubcategory = async (req, res) => {
   try {
-    const { serviceId, subcategoryName } = req.body;
+    const { serviceId, subcategoryName, date } = req.body;
 
-    if (!serviceId || !subcategoryName) {
-      return res.status(400).json({ error: 'serviceId and subcategoryName are required' });
+    if (!serviceId || !subcategoryName || !date) {
+      return res.status(400).json({ error: 'serviceId, subcategoryName, and date are required' });
     }
 
-    // Check if main Product exists for this service
     let mainProduct = await Product.findOne({ service: serviceId });
 
     if (!mainProduct) {
-      // Create a new main product structure with subcategory
+      // Create with subcategory
       mainProduct = await Product.create({
         service: serviceId,
-        subcategories: [{ name: subcategoryName, products: [] }]
+        subcategories: [{ name: subcategoryName, date, products: [] }]
       });
     } else {
-      // Check if subcategory already exists
       const subcategoryExists = mainProduct.subcategories.some(
         (sub) => sub.name.toLowerCase() === subcategoryName.toLowerCase()
       );
@@ -211,9 +209,10 @@ exports.addSubcategory = async (req, res) => {
         return res.status(400).json({ error: 'Subcategory already exists' });
       }
 
-      // Add new subcategory
+      // ✅ Fix: include date here too
       mainProduct.subcategories.push({
         name: subcategoryName,
+        date: date,
         products: []
       });
 
@@ -226,6 +225,7 @@ exports.addSubcategory = async (req, res) => {
     res.status(500).json({ error: 'Failed to add subcategory' });
   }
 };
+
 
 
 
