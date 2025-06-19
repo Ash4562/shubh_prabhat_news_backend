@@ -95,6 +95,39 @@ exports.createProductByReporter = async (req, res) => {
   }
 };
 
+
+
+exports.getProductsByReporterId = async (req, res) => {
+  try {
+    const { reporterId } = req.params;
+
+    if (!reporterId) {
+      return res.status(400).json({ error: 'Reporter ID is required' });
+    }
+
+    const products = await Product.aggregate([
+      { $unwind: '$subcategories' },
+      { $unwind: '$subcategories.products' },
+      { $match: { 'subcategories.products.reporterId': new mongoose.Types.ObjectId(reporterId) } },
+      {
+        $project: {
+          _id: 0,
+          serviceId: '$service',
+          subcategoryId: '$subcategories._id',
+          subcategoryName: '$subcategories.name',
+          product: '$subcategories.products'
+        }
+      }
+    ]);
+
+    res.status(200).json({ success: true, data: products });
+  } catch (err) {
+    console.error('Get Products by Reporter ID Error:', err);
+    res.status(500).json({ error: 'Failed to retrieve products' });
+  }
+};
+
+
 exports.updateProductStatusByProductId = async (req, res) => {
   try {
     const { productId } = req.params;
