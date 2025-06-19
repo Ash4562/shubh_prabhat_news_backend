@@ -95,33 +95,47 @@ exports.createProductByReporter = async (req, res) => {
   }
 };
 
-exports.updateProductStatus = async (req, res) => {
+exports.updateProductStatusByProductId = async (req, res) => {
   try {
-    const { serviceId, subcategoryId, productId } = req.params;
+    const { productId } = req.params;
     const { status } = req.body;
 
     if (!['pending', 'approved', 'rejected'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
-    const mainProduct = await Product.findOne({ service: serviceId });
-    if (!mainProduct) return res.status(404).json({ error: 'Service not found' });
+    // Find the main product doc that contains this productId anywhere
+    const mainProduct = await Product.findOne({
+      'subcategories.products._id': productId
+    });
 
-    const subcategory = mainProduct.subcategories.id(subcategoryId);
-    if (!subcategory) return res.status(404).json({ error: 'Subcategory not found' });
+    if (!mainProduct) {
+      return res.status(404).json({ error: 'Product not found in any subcategory' });
+    }
 
-    const product = subcategory.products.id(productId);
-    if (!product) return res.status(404).json({ error: 'Product not found' });
+    let found = false;
+    for (const sub of mainProduct.subcategories) {
+      const prod = sub.products.id(productId);
+      if (prod) {
+        prod.status = status;
+        found = true;
+        break;
+      }
+    }
 
-    product.status = status;
+    if (!found) {
+      return res.status(404).json({ error: 'Product ID not found' });
+    }
+
     await mainProduct.save();
 
-    res.status(200).json({ message: `Product status updated to ${status}`, product });
+    res.status(200).json({ message: `Product status updated to ${status}` });
   } catch (error) {
-    console.error('Update product status error:', error);
+    console.error('Update product status by productId error:', error);
     res.status(500).json({ error: 'Failed to update product status' });
   }
 };
+
 
 exports.createProduct = async (req, res) => {
   try {
@@ -308,7 +322,7 @@ exports.getProductsByService = async (req, res) => {
 exports.updateProductById = async (req, res) => {
   try {
     const { productId } = req.params;
-    const { name, price, subcategoryName } = req.body;
+    const { MainHeadline, Subheadline, Description, subcategoryName } = req.body;
 
     const productDoc = await Product.findOne({
       "subcategories.products._id": productId
@@ -320,21 +334,17 @@ exports.updateProductById = async (req, res) => {
 
     let updatedProduct = null;
 
-    // Loop through subcategories
     for (let subcategory of productDoc.subcategories) {
-      const product = subcategory.products.find(
-        (p) => p._id.toString() === productId
-      );
+      const product = subcategory.products.id(productId);
 
       if (product) {
-        // Update product fields
-        if (name) product.name = name.trim();
-        if (price) product.price = parseFloat(price);
+        if (MainHeadline) product.MainHeadline = MainHeadline.trim();
+        if (Subheadline) product.Subheadline = Subheadline.trim();
+        if (Description) product.Description = Description.trim();
         if (req.file && req.file.path) product.image = req.file.path;
 
         updatedProduct = product;
 
-        // Update subcategory name if needed
         if (subcategoryName && subcategory.name !== subcategoryName.trim()) {
           subcategory.name = subcategoryName.trim();
         }

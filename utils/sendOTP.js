@@ -13,7 +13,7 @@ const sendOTP = async (email, otp) => {
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Your OTP - Planetwash',
+    subject: 'Your OTP - shubh prabhat',
     text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
   });
 };

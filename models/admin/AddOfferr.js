@@ -12,10 +12,10 @@
 const mongoose = require('mongoose');
 
 const offerSchema = new mongoose.Schema({
-  shopId: {
+  reporterId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Shop',
-
+    ref: 'Reporter',
+    // required: true
   },
   image: {
     type: String,

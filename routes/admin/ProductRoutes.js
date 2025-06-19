@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 
 // const upload = require('../../middleware/multer');
-const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatus } = require('../../controller/admin/ProductController');
+const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId } = require('../../controller/admin/ProductController');
 const upload = require('../../middleware/multer');
 // repoerter
 router.post('/createProductByReporter', upload.single('image'), createProductByReporter);
-router.put('/status/:serviceId/:subcategoryId/:productId',updateProductStatus);
+router.put('/status/:productId',updateProductStatusByProductId);
 // 🟢 Create Product
 router.post('/addproduct', upload.single('image'), createProduct);
 router.post('/addSubcategory', addSubcategory);
@@ -18,6 +18,8 @@ router.get('/service/:serviceId', getProductsByService);
 
 // 🟡 Update Product
 router.put('/:productId', upload.single('image'), updateProductById);
+
+
 
 // 🔴 Delete Product
 router.delete('/:productId', deleteProductById);

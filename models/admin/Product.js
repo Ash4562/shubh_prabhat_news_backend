@@ -90,7 +90,7 @@ const ProductSchema = new mongoose.Schema({
           MainHeadline: { type: String, required: true },
           Subheadline: { type: String, required: true },
           Description: { type: String, required: true },
-          image: { type: String, required: true },
+          image: { type: String},
           reporterId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Reporter',

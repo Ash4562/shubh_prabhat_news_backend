@@ -3,6 +3,16 @@ const AddOffer = require('../../models/admin/AddOfferr');
 const cloudinary = require('../../utils/cloudinary');
 
 
+exports.getAlloffer = async (req, res) => {
+  try {
+    // Sab offers lao, bina populate kiye
+    const offers = await AddOffer.find();
+
+    res.status(200).json({ success: true, data: offers });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+};
 
 // 📤 Add Banner
 exports.addofferbyAdmin = async (req, res) => {
