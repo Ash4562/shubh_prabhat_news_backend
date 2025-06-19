@@ -11,7 +11,7 @@ exports.createService = async (req, res) => {
     const image = req.file?.path;
 
     if (!name || !image ) {
-      return res.status(400).json({ message: 'Name, image and shopId are required' });
+      return res.status(400).json({ message: 'Name, image and  are required' });
     }
 
     const newService = new Service({ name, image });
