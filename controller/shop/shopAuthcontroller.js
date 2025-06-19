@@ -88,19 +88,22 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({ message: 'Reporter ID and OTP are required' });
     }
 
-    const reporter = await Reporter.findById(reporterId);
+    const reporter = await Reporter.findById(reporterId).select('-password -__v');
 
     if (!reporter || reporter.otp !== otp || new Date() > reporter.otpExpiry) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
+    // Clear OTP and set login flag
     reporter.otp = null;
     reporter.otpExpiry = null;
     reporter.isLogin = true;
     await reporter.save();
 
+    // Generate token
     const token = jwt.sign({ id: reporterId }, process.env.JWT_KEY, { expiresIn: '1d' });
 
+    // Set cookie if needed
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -108,12 +111,30 @@ exports.verifyOTP = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ message: 'Login successful', token });
+    // Send user data along with token
+    return res.status(200).json({
+      message: 'Login successful',
+      token,
+      reporter: {
+        _id: reporter._id,
+        name: reporter.ReporterName,
+        phone: reporter.contactNo,
+        email: reporter.email,
+        address: reporter.address,
+        isLogin: reporter.isLogin,
+        isApproved: reporter.isApproved,
+        profileImage: reporter.profileImage,
+        createdAt: reporter.createdAt,
+        updatedAt: reporter.updatedAt
+        // add more fields as needed
+      }
+    });
   } catch (error) {
     console.error('OTP verification failed:', error);
     res.status(500).json({ message: 'OTP verification error' });
   }
 };
+
 
 
 exports.getAllReporters = async (req, res) => {
