@@ -220,47 +220,72 @@ exports.createProductToLatestNews = async (req, res) => {
 
 
 
-exports.getMainHeadlinesBySubcategoryId = async (req, res) => {
+
+
+exports.getAllMainHeadlinesProducts = async (req, res) => {
   try {
-    const { subcategoryId } = req.params;
-
-    console.log("📥 subcategoryId:", subcategoryId);
-
-    if (!mongoose.Types.ObjectId.isValid(subcategoryId)) {
-      return res.status(400).json({ error: 'Invalid subcategoryId format' });
-    }
-
     const products = await Product.find();
 
-    let foundSubcategory = null;
+    const allMainHeadlines = [];
 
-    for (const product of products) {
-      for (const sub of product.subcategories) {
-        if (sub._id.toString() === subcategoryId) {
-          const mainHeadlineProducts = (sub.products || []).filter(
-            (p) => p.status === 'MainHeadlines'
-          );
+    products.forEach((product) => {
+      product.subcategories.forEach((subcategory) => {
+        const mainHeadlineProducts = (subcategory.products || []).filter(
+          (p) => p.status === 'MainHeadlines'
+        );
 
-          foundSubcategory = {
-            _id: sub._id,
-            name: sub.name,
-            date: sub.date,
-            products: mainHeadlineProducts
-          };
-          break;
+        if (mainHeadlineProducts.length > 0) {
+          allMainHeadlines.push({
+            subcategoryId: subcategory._id,
+            subcategoryName: subcategory.name,
+            serviceId: product.service,
+            products: mainHeadlineProducts,
+          });
         }
-      }
-      if (foundSubcategory) break;
+      });
+    });
+
+    if (allMainHeadlines.length === 0) {
+      return res.status(404).json({ message: 'No MainHeadlines products found' });
     }
 
-    if (!foundSubcategory) {
-      return res.status(404).json({ error: 'Subcategory not found' });
-    }
-
-    res.status(200).json({ subcategory: foundSubcategory });
+    res.status(200).json({ mainHeadlines: allMainHeadlines });
   } catch (err) {
-    console.error('🔥 Error in getMainHeadlinesBySubcategoryId:', err);
-    res.status(500).json({ error: 'Failed to fetch main headline products' });
+    console.error('🔥 Error in getAllMainHeadlinesProducts:', err);
+    res.status(500).json({ error: 'Failed to fetch MainHeadlines products' });
+  }
+};
+exports.getAllLatestNewsProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
+
+    const allMainHeadlines = [];
+
+    products.forEach((product) => {
+      product.subcategories.forEach((subcategory) => {
+        const mainHeadlineProducts = (subcategory.products || []).filter(
+          (p) => p.status === 'LatestNews'
+        );
+
+        if (mainHeadlineProducts.length > 0) {
+          allMainHeadlines.push({
+            subcategoryId: subcategory._id,
+            subcategoryName: subcategory.name,
+            serviceId: product.service,
+            products: mainHeadlineProducts,
+          });
+        }
+      });
+    });
+
+    if (allMainHeadlines.length === 0) {
+      return res.status(404).json({ message: 'No MainHeadlines products found' });
+    }
+
+    res.status(200).json({ mainHeadlines: allMainHeadlines });
+  } catch (err) {
+    console.error('🔥 Error in getAllMainHeadlinesProducts:', err);
+    res.status(500).json({ error: 'Failed to fetch MainHeadlines products' });
   }
 };
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // const upload = require('../../middleware/multer');
-const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId, getAllNew, getAllPending, getProductsBySubcategoryId, createProductToLatestNews, createProductToMainHeadlines, getMainHeadlinesBySubcategoryId,  } = require('../../controller/admin/ProductController');
+const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId, getAllNew, getAllPending, getProductsBySubcategoryId, createProductToLatestNews, createProductToMainHeadlines, getMainHeadlinesBySubcategoryId, getAllMainHeadlinesProducts, getAllLatestNewsProducts,  } = require('../../controller/admin/ProductController');
 
 const upload = require('../../middleware/multer');
 // repoerter
@@ -11,6 +11,8 @@ router.put('/status/:productId',updateProductStatusByProductId);
 
 router.get('/getByreporter/:reporterId', getProductsByReporterId);
 router.get('/getSubcategoryById/:subcategoryId', getProductsBySubcategoryId);
+router.get('/getAllMainHeadlinesProducts', getAllMainHeadlinesProducts);
+router.get('/getAllLatestNewsProducts', getAllLatestNewsProducts);
 
 // 🟢 Create Product
 router.post('/addproduct', upload.single('image'), createProduct);
@@ -18,7 +20,6 @@ router.post('/createProductToLatestNews', upload.single('image'), createProductT
 router.post('/createProductToMainHeadlines', upload.single('image'), createProductToMainHeadlines);
 router.post('/addSubcategory', addSubcategory);
 router.post('/createOnlySubcategory', upload.single('image'), createOnlySubcategory);
-router.get('/getMainHeadlinesBySubcategoryId', getMainHeadlinesBySubcategoryId);
 router.get('/getall', getAllSubcategories);
 router.get('/getallappovedNews', getAllNew);
 router.get('/getallPendingNews', getAllPending);
