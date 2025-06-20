@@ -13,10 +13,11 @@ router.put('/approve/:id', approveOffer);
 router.put('/rejected/:id', rejectedOffer);
 router.get('/pending', getPendingOffers);
 router.get('/approved', getApprovedOffers);
-router.get('/approved/:shopId', getApprovedOffersByShop);
-router.get('/rejected/:shopId', getRejectedOffersByShop);
-router.get('/pending/:shopId',getPendingOffersByShop) ;
+router.get('/approved/:reporterId', getApprovedOffersByShop);
+router.get('/rejected/:reporterId', getRejectedOffersByShop);
+router.get('/pending/:reporterId',getPendingOffersByShop) ;
 router.put('/update/:id', upload.single('image'), updateoffer);
 router.delete('/delete/:id', deleteoffer);
 
 module.exports = router;
+// /admin/offer/add

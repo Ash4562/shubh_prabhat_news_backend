@@ -53,17 +53,20 @@ exports.addofferbyAdmin = async (req, res) => {
 
 exports.addoffer = async (req, res) => {
   try {
-    const { shopId } = req.body;
+    const { reporterId,MainHeadline, Subheadline, Description } = req.body;
 
-    if (!shopId) {
-      return res.status(400).json({ success: false, message: 'shopId is required' });
+    if (!reporterId ||!MainHeadline || !Subheadline || !Description) {
+      return res.status(400).json({ success: false, message: 'reporterId is required' });
     }
 
     const result = await cloudinary.uploader.upload(req.file.path);
 
     const offer = new AddOffer({
-      shopId,
+      reporterId,
       image: result.secure_url,
+      MainHeadline: MainHeadline.trim(),
+      Subheadline: Subheadline.trim(),
+      Description: Description.trim(),
       status: 'pending'
     });
 

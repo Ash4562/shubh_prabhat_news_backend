@@ -13,9 +13,9 @@ const tempUsers = new Map(); // key: email, value: { userData + otp }
  * Register - Step 1: Store data and send OTP
  */
 exports.register = async (req, res) => {
-  const { Name, contactNo, email } = req.body;
+  const { Name, contactNo, email,address } = req.body;
 
-  if (!Name || !contactNo || !email) {
+  if (!Name || !contactNo || !email||!address) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
@@ -26,6 +26,7 @@ exports.register = async (req, res) => {
 
     tempUsers.set(normalizedEmail, {
       Name: Name.trim(),
+      address: address.trim(),
       contactNo: contactNo.trim(),
       email: normalizedEmail,
       otp,
@@ -96,6 +97,7 @@ exports.verifyOtp = async (req, res) => {
         Name: tempData.Name,
         contactNo: tempData.contactNo,
         email: tempData.email,
+        address: tempData.address,
       });
 
       tempUsers.delete(normalizedEmail);

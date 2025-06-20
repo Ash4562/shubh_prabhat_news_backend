@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   contactNo: String,
   email: { type: String, unique: true },
   otp: String,     
+  address: String,
   otpExpiry: Date,  
 }, {
   timestamps: true 
