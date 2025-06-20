@@ -11,6 +11,10 @@ app.use(cors({
         "http://localhost:5173",
         "http://localhost:5174",
         "https://shubhprabhat-admin-panel.onrender.com",
+        "https://shubprabhat-userside.onrender.com/",
+        "https://shubprabhat-userside.onrender.com",
+        "https://shubh-prabhat.vercel.app/",
+        "https://shubh-prabhat.vercel.app",
  
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH','DELETE'],

@@ -322,12 +322,12 @@ exports.getProductsByReporterId = async (req, res) => {
 };
 
 
-exports.updateProductStatusByProductId = async (req, res) => {
+exports.  updateProductStatusByProductId = async (req, res) => {
   try {
     const { productId } = req.params;
     const { status } = req.body;
 
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
+    if (!['pending', 'approved', 'rejected','MainHeadlines','LatestNews'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
