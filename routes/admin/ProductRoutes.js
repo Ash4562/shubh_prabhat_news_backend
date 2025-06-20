@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // const upload = require('../../middleware/multer');
-const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId } = require('../../controller/admin/ProductController');
+const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId, getAllNew, getSubcategoryById } = require('../../controller/admin/ProductController');
 const upload = require('../../middleware/multer');
 // repoerter
 router.post('/createProductByReporter', upload.single('image'), createProductByReporter);
@@ -15,7 +15,9 @@ router.post('/addproduct', upload.single('image'), createProduct);
 router.post('/addSubcategory', addSubcategory);
 router.post('/createOnlySubcategory', upload.single('image'), createOnlySubcategory);
 router.get('/getall', getAllSubcategories);
-
+router.get('/getallappovedNews', getAllNew);
+router.get('/getSubcategoryById/:subcategoryId ', getSubcategoryById);
+// subcategories/getSubcategoryById/:subcategoryId
 // 🔵 Get Products by Service ID
 router.get('/service/:serviceId', getProductsByService);
 

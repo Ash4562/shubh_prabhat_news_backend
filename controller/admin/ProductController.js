@@ -210,53 +210,53 @@ exports.updateProductStatusByProductId = async (req, res) => {
 };
 
 
-// exports.createProduct = async (req, res) => {
-//   try {
-//     const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
-
-//     if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description || !req.file) {
-//       return res.status(400).json({ error: 'All fields are required' });
-//     }
-
-//     const productData = {
-//       MainHeadline: MainHeadline.trim(),
-//       Subheadline: Subheadline.trim(),
-//       Description: Description.trim(),
-//       image: req.file.path,   
-//        status: 'approved' // default status
-//     };
-
-//     // Check if main Product exists for this service
-//     let mainProduct = await Product.findOne({ service: serviceId });
-
-//     if (!mainProduct) {
-//       return res.status(404).json({ error: 'Main product not found for this service' });
-//     }
-
-//     // Find subcategory by subcategoryId (_id inside subcategories array)
-//     // const subcategory = mainProduct.subcategories.id(subcategoryId);
-//     // console.log("subcategory",mainProduct);
-
-//     const subcategory = mainProduct.subcategories.id(subcategoryId);
-//     console.log("subcategory",mainProduct);
-
-//     if (!subcategory) {
-//       return res.status(404).json({ error: 'Subcategory not found' });
-//     }
-
-//     // Push product data into the found subcategory
-//     subcategory.products.push(productData);
-
-//     await mainProduct.save();
-
-//     res.status(201).json({ message: 'Product added successfully', product: mainProduct });
-//   } catch (err) {
-//     console.error('Create Product Error:', err);
-//     res.status(500).json({ error: 'Failed to create product' });
-//   }
-// };
 
 
+exports.getSubcategoryById = async (req, res) => {
+  try {
+    const { subcategoryId } = req.params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(subcategoryId)) {
+      return res.status(400).json({ error: 'Invalid subcategoryId format' });
+    }
+
+    // Find all products and search for the matching subcategory
+    const products = await Product.find({}, 'subcategories');
+
+    let matchedSubcategory = null;
+
+    for (const product of products) {
+      const subcategory = product.subcategories.find(
+        (sub) => sub._id.toString() === subcategoryId
+      );
+
+      if (subcategory) {
+        // Filter only approved products
+        const approvedProducts = (subcategory.products || []).filter(
+          (prod) => prod.status === 'approved'
+        );
+
+        matchedSubcategory = {
+          _id: subcategory._id,
+          name: subcategory.name,
+          date: subcategory.date,
+          products: approvedProducts
+        };
+        break; // Found it, no need to loop further
+      }
+    }
+
+    if (!matchedSubcategory) {
+      return res.status(404).json({ error: 'Subcategory not found' });
+    }
+
+    res.status(200).json({ subcategory: matchedSubcategory });
+  } catch (err) {
+    console.error('Error fetching subcategory by ID:', err);
+    res.status(500).json({ error: 'Failed to fetch subcategory' });
+  }
+};
 
 
 
@@ -370,6 +370,38 @@ exports.getAllSubcategories = async (req, res) => {
 
     // Flatten subcategories from all products
     const allSubcategories = products.flatMap(product => product.subcategories || []);
+
+    res.status(200).json({ subcategories: allSubcategories });
+  } catch (err) {
+    console.error('Error fetching all subcategories:', err);
+    res.status(500).json({ error: 'Failed to fetch all subcategories' });
+  }
+};
+// for users
+exports.getAllNew = async (req, res) => {
+  try {
+    const products = await Product.find({}, 'subcategories');
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: 'No subcategories found' });
+    }
+
+    // Flatten and filter subcategories to include only approved products
+    const allSubcategories = products.flatMap(product =>
+      (product.subcategories || []).map(subcat => {
+        // Filter approved products
+        const approvedProducts = (subcat.products || []).filter(
+          prod => prod.status === 'approved'
+        );
+
+        return {
+          _id: subcat._id,
+          name: subcat.name,
+          date: subcat.date,
+          products: approvedProducts
+        };
+      })
+    );
 
     res.status(200).json({ subcategories: allSubcategories });
   } catch (err) {
