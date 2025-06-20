@@ -134,6 +134,135 @@ exports.createProduct = async (req, res) => {
     res.status(500).json({ error: 'Failed to create product' });
   }
 };
+exports.createProductToMainHeadlines = async (req, res) => {
+  try {
+    const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
+
+    if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description  || !req.file) {
+      return res.status(400).json({ error: 'All fields are required including reporterId and image' });
+    }
+
+    const productData = {
+      MainHeadline: MainHeadline.trim(),
+      Subheadline: Subheadline.trim(),
+      Description: Description.trim(),
+      image: req.file.path,
+   
+      status: 'MainHeadlines' // default status
+    };
+
+    // Check if main product entry exists for this service
+    let mainProduct = await Product.findOne({ service: serviceId });
+
+    if (!mainProduct) {
+      return res.status(404).json({ error: 'Main product not found for this service' });
+    }
+
+    // Find subcategory inside that document
+    const subcategory = mainProduct.subcategories.id(subcategoryId);
+    if (!subcategory) {
+      return res.status(404).json({ error: 'Subcategory not found' });
+    }
+
+    // Add new product to subcategory
+    subcategory.products.push(productData);
+    await mainProduct.save();
+
+    res.status(201).json({ message: 'Product added successfully and pending approval', product: mainProduct });
+  } catch (err) {
+    console.error('Create Product Error:', err);
+    res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+
+
+exports.createProductToLatestNews = async (req, res) => {
+  try {
+    const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
+
+    if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description  || !req.file) {
+      return res.status(400).json({ error: 'All fields are required including reporterId and image' });
+    }
+
+    const productData = {
+      MainHeadline: MainHeadline.trim(),
+      Subheadline: Subheadline.trim(),
+      Description: Description.trim(),
+      image: req.file.path,
+   
+      status: 'LatestNews' // default status
+    };
+
+    // Check if main product entry exists for this service
+    let mainProduct = await Product.findOne({ service: serviceId });
+
+    if (!mainProduct) {
+      return res.status(404).json({ error: 'Main product not found for this service' });
+    }
+
+    // Find subcategory inside that document
+    const subcategory = mainProduct.subcategories.id(subcategoryId);
+    if (!subcategory) {
+      return res.status(404).json({ error: 'Subcategory not found' });
+    }
+
+    // Add new product to subcategory
+    subcategory.products.push(productData);
+    await mainProduct.save();
+
+    res.status(201).json({ message: 'Product added successfully and pending approval', product: mainProduct });
+  } catch (err) {
+    console.error('Create Product Error:', err);
+    res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+
+
+
+
+exports.getMainHeadlinesBySubcategoryId = async (req, res) => {
+  try {
+    const { subcategoryId } = req.params;
+
+    console.log("📥 subcategoryId:", subcategoryId);
+
+    if (!mongoose.Types.ObjectId.isValid(subcategoryId)) {
+      return res.status(400).json({ error: 'Invalid subcategoryId format' });
+    }
+
+    const products = await Product.find();
+
+    let foundSubcategory = null;
+
+    for (const product of products) {
+      for (const sub of product.subcategories) {
+        if (sub._id.toString() === subcategoryId) {
+          const mainHeadlineProducts = (sub.products || []).filter(
+            (p) => p.status === 'MainHeadlines'
+          );
+
+          foundSubcategory = {
+            _id: sub._id,
+            name: sub.name,
+            date: sub.date,
+            products: mainHeadlineProducts
+          };
+          break;
+        }
+      }
+      if (foundSubcategory) break;
+    }
+
+    if (!foundSubcategory) {
+      return res.status(404).json({ error: 'Subcategory not found' });
+    }
+
+    res.status(200).json({ subcategory: foundSubcategory });
+  } catch (err) {
+    console.error('🔥 Error in getMainHeadlinesBySubcategoryId:', err);
+    res.status(500).json({ error: 'Failed to fetch main headline products' });
+  }
+};
 
 
 
