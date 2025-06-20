@@ -13,7 +13,7 @@ app.use(cors({
         "https://shubhprabhat-admin-panel.onrender.com",
  
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH','DELETE'],
     credentials: true,
 }));
 app.use("/shop/contactus", require("./routes/conatct/ContantusRoutes"));
