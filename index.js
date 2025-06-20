@@ -16,7 +16,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'PATCH','DELETE'],
     credentials: true,
 }));
-app.use("/shop/contactus", require("./routes/conatct/ContantusRoutes"));
+app.use("/news/contactus", require("./routes/conatct/ContantusRoutes"));
 app.use("/shop/pickup", require("./routes/conatct/PickupRoutes"));
 // reporter
 app.use("/reporter/auth", require("./routes/shop/shopAuthroutes"));

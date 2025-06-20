@@ -42,4 +42,5 @@ router.get('/all', getAllReporters);
 router.get('/:id', getReporterById);
 router.post('/logout', logoutReporter);
 
+
 module.exports = router;
