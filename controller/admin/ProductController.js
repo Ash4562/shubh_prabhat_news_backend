@@ -213,28 +213,42 @@ exports.updateProductStatusByProductId = async (req, res) => {
 
 
 
-exports.getSubcategoryById = async (req, res) => {
+
+exports.getProductsBySubcategoryId = async (req, res) => {
   try {
     const { subcategoryId } = req.params;
+    console.log("📥 Requested subcategoryId:", subcategoryId);
 
-    // Validate subcategoryId format
+    // Step 1: Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(subcategoryId)) {
+      console.log("❌ Invalid subcategoryId format");
       return res.status(400).json({ error: 'Invalid subcategoryId format' });
     }
 
-    // Search across all Product documents for the subcategory
-    const products = await Product.find({}, 'subcategories');
+    // Step 2: Fetch all products with subcategories
+    const products = await Product.find();
+    console.log("📦 Total Products Found:", products.length);
 
-    let matchedSubcategory = null;
+    let foundSubcategory = null;
 
+    // Step 3: Loop through each product's subcategories
     for (const product of products) {
+      console.log("🔍 Checking product ID:", product._id.toString());
+
       for (const sub of product.subcategories) {
+        console.log("   ➤ Subcategory ID:", sub._id.toString(), "Name:", sub.name);
+
         if (sub._id.toString() === subcategoryId) {
+          console.log("✅ Match found for subcategoryId:", subcategoryId);
+
+          // Filter approved products only
           const approvedProducts = (sub.products || []).filter(
             (p) => p.status === 'approved'
           );
 
-          matchedSubcategory = {
+          console.log("   🎯 Approved Products Count:", approvedProducts.length);
+
+          foundSubcategory = {
             _id: sub._id,
             name: sub.name,
             date: sub.date,
@@ -243,17 +257,23 @@ exports.getSubcategoryById = async (req, res) => {
           break;
         }
       }
-      if (matchedSubcategory) break; // exit loop early if found
+
+      if (foundSubcategory) break;
     }
 
-    if (!matchedSubcategory) {
+    // Step 4: Check if subcategory was found
+    if (!foundSubcategory) {
+      console.log("❌ Subcategory not found in any product");
       return res.status(404).json({ error: 'Subcategory not found' });
     }
 
-    res.status(200).json({ subcategory: matchedSubcategory });
+    // Step 5: Return matched subcategory with approved products
+    console.log("📤 Returning subcategory with approved products");
+    res.status(200).json({ subcategory: foundSubcategory });
+
   } catch (err) {
-    console.error('Error fetching subcategory by ID:', err);
-    res.status(500).json({ error: 'Failed to fetch subcategory' });
+    console.error('🔥 Server Error in getProductsBySubcategoryId:', err);
+    res.status(500).json({ error: 'Server error while fetching subcategory' });
   }
 };
 
@@ -392,6 +412,37 @@ exports.getAllNew = async (req, res) => {
         // Filter approved products
         const approvedProducts = (subcat.products || []).filter(
           prod => prod.status === 'approved'
+        );
+
+        return {
+          _id: subcat._id,
+          name: subcat.name,
+          date: subcat.date,
+          products: approvedProducts
+        };
+      })
+    );
+
+    res.status(200).json({ subcategories: allSubcategories });
+  } catch (err) {
+    console.error('Error fetching all subcategories:', err);
+    res.status(500).json({ error: 'Failed to fetch all subcategories' });
+  }
+};
+exports.getAllPending = async (req, res) => {
+  try {
+    const products = await Product.find({}, 'subcategories');
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: 'No subcategories found' });
+    }
+
+    // Flatten and filter subcategories to include only approved products
+    const allSubcategories = products.flatMap(product =>
+      (product.subcategories || []).map(subcat => {
+        // Filter approved products
+        const approvedProducts = (subcat.products || []).filter(
+          prod => prod.status === 'pending'
         );
 
         return {
