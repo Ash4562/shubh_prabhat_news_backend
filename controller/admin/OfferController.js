@@ -159,26 +159,40 @@ exports.getoffer = async (req, res) => {
 
 
 // 🖊️ Update Banner
+
+// /
 exports.updateoffer = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await cloudinary.uploader.upload(req.file.path);
+    const { MainHeadline, Subheadline, Description } = req.body;
 
-    const updated = await AddOffer.findByIdAndUpdate(
-      id,
-      { image: result.secure_url },
-      { new: true }
-    );
+    // Build update object
+    const updateData = {};
 
-    if (!updated) {
+    if (MainHeadline) updateData.MainHeadline = MainHeadline.trim();
+    if (Subheadline) updateData.Subheadline = Subheadline.trim();
+    if (Description) updateData.Description = Description.trim();
+
+    // Handle image upload if file is present
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path);
+      updateData.image = result.secure_url;
+    }
+
+    // Perform update
+    const updatedOffer = await AddOffer.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!updatedOffer) {
       return res.status(404).json({ success: false, message: 'Banner not found' });
     }
 
-    res.status(200).json({ success: true, message: 'Banner updated', data: updated });
+    res.status(200).json({ success: true, message: 'Banner updated', data: updatedOffer });
   } catch (err) {
+    console.error('Update Offer Error:', err);
     res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }
 };
+
 
 // 🗑️ Delete Banner
 exports.deleteoffer = async (req, res) => {

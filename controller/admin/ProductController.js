@@ -212,39 +212,38 @@ exports.updateProductStatusByProductId = async (req, res) => {
 
 
 
+
 exports.getSubcategoryById = async (req, res) => {
   try {
     const { subcategoryId } = req.params;
 
-    // Validate ObjectId format
+    // Validate subcategoryId format
     if (!mongoose.Types.ObjectId.isValid(subcategoryId)) {
       return res.status(400).json({ error: 'Invalid subcategoryId format' });
     }
 
-    // Find all products and search for the matching subcategory
+    // Search across all Product documents for the subcategory
     const products = await Product.find({}, 'subcategories');
 
     let matchedSubcategory = null;
 
     for (const product of products) {
-      const subcategory = product.subcategories.find(
-        (sub) => sub._id.toString() === subcategoryId
-      );
+      for (const sub of product.subcategories) {
+        if (sub._id.toString() === subcategoryId) {
+          const approvedProducts = (sub.products || []).filter(
+            (p) => p.status === 'approved'
+          );
 
-      if (subcategory) {
-        // Filter only approved products
-        const approvedProducts = (subcategory.products || []).filter(
-          (prod) => prod.status === 'approved'
-        );
-
-        matchedSubcategory = {
-          _id: subcategory._id,
-          name: subcategory.name,
-          date: subcategory.date,
-          products: approvedProducts
-        };
-        break; // Found it, no need to loop further
+          matchedSubcategory = {
+            _id: sub._id,
+            name: sub.name,
+            date: sub.date,
+            products: approvedProducts
+          };
+          break;
+        }
       }
+      if (matchedSubcategory) break; // exit loop early if found
     }
 
     if (!matchedSubcategory) {
@@ -257,6 +256,7 @@ exports.getSubcategoryById = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch subcategory' });
   }
 };
+
 
 
 
