@@ -14,3 +14,4 @@ router.put('/update/:id', upload.single('image'), updateService);
 router.delete('/delete/:id', deleteService);
 router.get('/shops-by-service/:serviceName', getShopsByServiceName);
 module.exports = router;
+ 

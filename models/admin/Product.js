@@ -80,6 +80,11 @@ const ProductSchema = new mongoose.Schema({
     ref: 'Service',
     required: true,
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    // required: true,
+  },
   
   subcategories: [
     {
@@ -101,7 +106,7 @@ const ProductSchema = new mongoose.Schema({
           },
           status: {
             type: String,
-            enum: ['pending', 'approved', 'rejected','MainHeadlines','LatestNews'],
+            enum: ['pending', 'approved', 'rejected','MainHeadlines','LatestNews',"save"],
             default: 'pending'
           }
         },

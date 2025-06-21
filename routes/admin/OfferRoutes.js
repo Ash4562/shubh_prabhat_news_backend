@@ -20,4 +20,4 @@ router.put('/update/:id', upload.single('image'), updateoffer);
 router.delete('/delete/:id', deleteoffer);
 
 module.exports = router;
-// /admin/offer/add
+ 

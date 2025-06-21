@@ -181,7 +181,7 @@ exports.createProductToLatestNews = async (req, res) => {
     const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
 
     if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description  || !req.file) {
-      return res.status(400).json({ error: 'All fields are required including reporterId and image' });
+      return res.status(400).json({ error: 'All fields are required including and image' });
     }
 
     const productData = {
@@ -290,6 +290,41 @@ exports.getAllLatestNewsProducts = async (req, res) => {
 };
 
 
+exports.getSavedProductsByUserId = async (req, res) => {
+  const { userId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ error: 'Invalid userId' });
+  }
+
+  try {
+    const products = await Product.find({
+      'subcategories.products.savedBy': userId
+    });
+
+    // Filter only saved products
+    const savedProducts = [];
+
+    products.forEach(prod => {
+      prod.subcategories.forEach(sub => {
+        const matchingProducts = sub.products.filter(p => 
+          p.savedBy && p.savedBy.includes(userId)
+        );
+        if (matchingProducts.length > 0) {
+          savedProducts.push(...matchingProducts);
+        }
+      });
+    });
+
+    res.status(200).json({ savedProducts });
+  } catch (error) {
+    console.error('Get saved products error:', error);
+    res.status(500).json({ error: 'Failed to fetch saved products' });
+  }
+};
+
+
+
 
 exports.getProductsByReporterId = async (req, res) => {
   try {
@@ -363,6 +398,63 @@ exports.  updateProductStatusByProductId = async (req, res) => {
   }
 };
 
+exports.updateProductStatusToSave = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { status, userId } = req.body;
+
+    const validStatuses = ['pending', 'approved', 'rejected', 'MainHeadlines', 'LatestNews', 'save'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ error: 'Invalid productId' });
+    }
+
+    if (status === 'save' && !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid userId for save' });
+    }
+
+    const mainProduct = await Product.findOne({
+      'subcategories.products._id': productId
+    });
+
+    if (!mainProduct) {
+      return res.status(404).json({ error: 'Product not found in any subcategory' });
+    }
+
+    let found = false;
+    for (const sub of mainProduct.subcategories) {
+      const prod = sub.products.id(productId);
+      if (prod) {
+        prod.status = status;
+
+        if (status === 'save') {
+          // Prevent duplicate userId in savedBy[]
+          if (!prod.savedBy) prod.savedBy = [];
+          if (!prod.savedBy.includes(userId)) {
+            prod.savedBy.push(userId);
+          }
+        }
+
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return res.status(404).json({ error: 'Product ID not found' });
+    }
+
+    await mainProduct.save();
+
+    res.status(200).json({ message: `Product status updated to ${status}` });
+  } catch (error) {
+    console.error('Update product status by productId error:', error);
+    res.status(500).json({ error: 'Failed to update product status' });
+  }
+};
 
 
 
