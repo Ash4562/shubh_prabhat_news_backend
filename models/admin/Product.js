@@ -80,14 +80,10 @@ const ProductSchema = new mongoose.Schema({
     ref: 'Service',
     required: true,
   },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    // required: true,
-  },
   
   subcategories: [
     {
+     
       _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
       name: { type: String, required: true },
       date: { type: Date, default: Date.now },
@@ -108,7 +104,8 @@ const ProductSchema = new mongoose.Schema({
             type: String,
             enum: ['pending', 'approved', 'rejected','MainHeadlines','LatestNews',"save"],
             default: 'pending'
-          }
+          },    date: { type: Date, default: Date.now }  ,
+          savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
         },
       ],
     },

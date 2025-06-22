@@ -68,7 +68,8 @@ exports.createProductByReporter = async (req, res) => {
       Description: Description.trim(),
       image: req.file.path,
       reporterId,
-      status: 'pending' // default status
+      status: 'pending' ,// default status
+      date: new Date()
     };
 
     // Check if main product entry exists for this service
@@ -108,7 +109,9 @@ exports.createProduct = async (req, res) => {
       Description: Description.trim(),
       image: req.file.path,
    
-      status: 'approved' // default status
+      status: 'approved',
+      date: new Date()
+       // default status
     };
 
     // Check if main product entry exists for this service
@@ -148,7 +151,8 @@ exports.createProductToMainHeadlines = async (req, res) => {
       Description: Description.trim(),
       image: req.file.path,
    
-      status: 'MainHeadlines' // default status
+      status: 'MainHeadlines' ,// default status,
+      date: new Date()
     };
 
     // Check if main product entry exists for this service
@@ -176,11 +180,13 @@ exports.createProductToMainHeadlines = async (req, res) => {
 };
 
 
+
+
 exports.createProductToLatestNews = async (req, res) => {
   try {
     const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
 
-    if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description  || !req.file) {
+    if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description || !req.file) {
       return res.status(400).json({ error: 'All fields are required including and image' });
     }
 
@@ -189,12 +195,15 @@ exports.createProductToLatestNews = async (req, res) => {
       Subheadline: Subheadline.trim(),
       Description: Description.trim(),
       image: req.file.path,
-   
-      status: 'LatestNews' // default status
+      status: 'LatestNews',
+      date: new Date()
     };
 
-    // Check if main product entry exists for this service
-    let mainProduct = await Product.findOne({ service: serviceId });
+    // Safely cast to ObjectId
+    const serviceObjectId = new mongoose.Types.ObjectId(serviceId);
+
+    // Find main product for this service
+    let mainProduct = await Product.findOne({ service: serviceObjectId });
 
     if (!mainProduct) {
       return res.status(404).json({ error: 'Main product not found for this service' });
@@ -216,6 +225,7 @@ exports.createProductToLatestNews = async (req, res) => {
     res.status(500).json({ error: 'Failed to create product' });
   }
 };
+
 
 
 
@@ -259,69 +269,38 @@ exports.getAllLatestNewsProducts = async (req, res) => {
   try {
     const products = await Product.find();
 
-    const allMainHeadlines = [];
+    const allLatestNews = [];
 
     products.forEach((product) => {
       product.subcategories.forEach((subcategory) => {
-        const mainHeadlineProducts = (subcategory.products || []).filter(
+        const latestNewsProducts = (subcategory.products || []).filter(
           (p) => p.status === 'LatestNews'
         );
 
-        if (mainHeadlineProducts.length > 0) {
-          allMainHeadlines.push({
+        if (latestNewsProducts.length > 0) {
+          allLatestNews.push({
             subcategoryId: subcategory._id,
             subcategoryName: subcategory.name,
             serviceId: product.service,
-            products: mainHeadlineProducts,
+            products: latestNewsProducts,
           });
         }
       });
     });
 
-    if (allMainHeadlines.length === 0) {
-      return res.status(404).json({ message: 'No MainHeadlines products found' });
+    if (allLatestNews.length === 0) {
+      return res.status(404).json({ message: 'No LatestNews products found' });
     }
 
-    res.status(200).json({ mainHeadlines: allMainHeadlines });
+    res.status(200).json({ latestNews: allLatestNews });
   } catch (err) {
-    console.error('🔥 Error in getAllMainHeadlinesProducts:', err);
-    res.status(500).json({ error: 'Failed to fetch MainHeadlines products' });
+    console.error('🔥 Error in getAllLatestNewsProducts:', err);
+    res.status(500).json({ error: 'Failed to fetch LatestNews products' });
   }
 };
 
 
-exports.getSavedProductsByUserId = async (req, res) => {
-  const { userId } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).json({ error: 'Invalid userId' });
-  }
-
-  try {
-    const products = await Product.find({
-      'subcategories.products.savedBy': userId
-    });
-
-    // Filter only saved products
-    const savedProducts = [];
-
-    products.forEach(prod => {
-      prod.subcategories.forEach(sub => {
-        const matchingProducts = sub.products.filter(p => 
-          p.savedBy && p.savedBy.includes(userId)
-        );
-        if (matchingProducts.length > 0) {
-          savedProducts.push(...matchingProducts);
-        }
-      });
-    });
-
-    res.status(200).json({ savedProducts });
-  } catch (error) {
-    console.error('Get saved products error:', error);
-    res.status(500).json({ error: 'Failed to fetch saved products' });
-  }
-};
 
 
 
@@ -456,6 +435,36 @@ exports.updateProductStatusToSave = async (req, res) => {
   }
 };
 
+
+exports.getSavedProductsByUserId = async (req, res) => {
+  const { userId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ error: 'Invalid userId' });
+  }
+
+  try {
+    const allProducts = await Product.find();
+
+    const savedProducts = [];
+
+    allProducts.forEach(prod => {
+      prod.subcategories.forEach(sub => {
+        const matchingProducts = sub.products.filter(p => 
+          p.savedBy && p.savedBy.includes(userId)
+        );
+        if (matchingProducts.length > 0) {
+          savedProducts.push(...matchingProducts);
+        }
+      });
+    });
+
+    res.status(200).json({ savedProducts });
+  } catch (error) {
+    console.error('Get saved products error:', error);
+    res.status(500).json({ error: 'Failed to fetch saved products' });
+  }
+};
 
 
 
