@@ -718,10 +718,30 @@ exports.getAllPending = async (req, res) => {
 
 
 // 📥 Get All Products by Service ID
+// exports.getProductsByService = async (req, res) => {
+//   try {
+//     const { serviceId } = req.params;
+//     const product = await Product.findOne({ service: serviceId });
+
+//     if (!product) {
+//       return res.status(404).json({ message: 'No products found for this service' });
+//     }
+
+//     res.status(200).json({ product });
+//   } catch (err) {
+//     res.status(500).json({ error: 'Failed to fetch products' });
+//   }
+// };
+
 exports.getProductsByService = async (req, res) => {
   try {
     const { serviceId } = req.params;
-    const product = await Product.findOne({ service: serviceId });
+
+    // Find one product and populate service details
+    const product = await Product.findOne({ service: serviceId }).populate({
+      path: 'service',
+      select: 'name', // Only fetch the name field from Service
+    });
 
     if (!product) {
       return res.status(404).json({ message: 'No products found for this service' });
@@ -729,9 +749,11 @@ exports.getProductsByService = async (req, res) => {
 
     res.status(200).json({ product });
   } catch (err) {
+    console.error("Error fetching products by service:", err);
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 };
+
 
 // 🖊️ Update a Specific Product inside Subcategory
 exports.updateProductById = async (req, res) => {
