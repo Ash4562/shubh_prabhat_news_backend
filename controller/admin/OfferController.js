@@ -127,7 +127,7 @@ exports.rejectedOffer = async (req, res) => {
 };
 exports.getPendingOffers = async (req, res) => {
   try {
-    const pendingOffers = await AddOffer.find({ status: 'pending' }).populate('shopId');
+    const pendingOffers = await AddOffer.find({ status: 'pending' }).populate('reporterId');
     
     res.status(200).json({ success: true, data: pendingOffers });
   } catch (err) {
@@ -149,7 +149,7 @@ exports.getApprovedOffers = async (req, res) => {
 // 📋 Get All Banners
 exports.getoffer = async (req, res) => {
   try {
-    const banners = await AddOffer.find().populate('shopId'); // Populate shop data
+    const banners = await AddOffer.find().populate('reporterId'); // Populate shop data
 
     res.status(200).json({ success: true, data: banners });
   } catch (err) {
