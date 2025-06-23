@@ -213,8 +213,8 @@ exports.deleteoffer = async (req, res) => {
 
 exports.getRejectedOffersByShop = async (req, res) => {
   try {
-    const { shopId } = req.params;
-    const pendingOffers = await AddOffer.find({ shopId, status: 'rejected' });
+    const { reporterId } = req.params;
+    const pendingOffers = await AddOffer.find({ reporterId, status: 'rejected' });
 
     res.status(200).json({ success: true, data: pendingOffers });
   } catch (err) {
@@ -223,9 +223,9 @@ exports.getRejectedOffersByShop = async (req, res) => {
 };
 exports.getPendingOffersByShop = async (req, res) => {
   try {
-    const { shopId } = req.params;
+    const { reporterId } = req.params;
 
-    const offers = await AddOffer.find({ shopId, status: 'pending' });
+    const offers = await AddOffer.find({ reporterId, status: 'pending' });
     if (!offers || offers.length === 0) {
       return res.status(404).json({ success: false, message: "No pending offers found for this shop." });
     }
@@ -239,8 +239,8 @@ exports.getPendingOffersByShop = async (req, res) => {
 
 exports.getApprovedOffersByShop = async (req, res) => {
   try {
-    const { shopId } = req.params;
-    const approvedOffers = await AddOffer.find({ shopId, status: 'approved' });
+    const { reporterId } = req.params;
+    const approvedOffers = await AddOffer.find({ reporterId, status: 'approved' });
 
     res.status(200).json({ success: true, data: approvedOffers });
   } catch (err) {
