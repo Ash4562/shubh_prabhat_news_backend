@@ -21,7 +21,7 @@
 
 
 const express = require('express');
-const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter } = require('../../controller/shop/shopAuthcontroller');
+const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters } = require('../../controller/shop/shopAuthcontroller');
 const router = express.Router();
 
 // const reporterController = require('../controllers/reporterController');
@@ -39,6 +39,7 @@ router.post('/login',login);
 router.post('/verify-otp',verifyOTP);
 
 router.get('/all', getAllReporters);
+router.get('/getAllPendingReporters', getAllPendingReporters);
 router.get('/:id', getReporterById);
 router.post('/logout', logoutReporter);
 

@@ -147,6 +147,18 @@ exports.getAllReporters = async (req, res) => {
   }
 };
 
+exports.getAllPendingReporters = async (req, res) => {
+  try {
+    const reporters = await Reporter.find({ isApproved: 'pending' });
+    res.status(200).json({ success: true, reporters });
+  } catch (error) {
+    console.error('Fetch reporters error:', error);
+    res.status(500).json({ error: 'Failed to fetch reporters' });
+  }
+};
+
+
+
 // 🔍 Get Reporter by ID
 exports.getReporterById = async (req, res) => {
   try {
