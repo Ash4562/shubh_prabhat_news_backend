@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 
 // const upload = require('../../middleware/multer');
-const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId, getAllNew, getAllPending, getProductsBySubcategoryId, createProductToLatestNews, createProductToMainHeadlines, getMainHeadlinesBySubcategoryId, getAllMainHeadlinesProducts, getAllLatestNewsProducts, updateProductStatusToSave, getSavedProductsByUserId,  } = require('../../controller/admin/ProductController');
+const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId, getAllNew, getAllPending, getProductsBySubcategoryId, createProductToLatestNews, createProductToMainHeadlines, getMainHeadlinesBySubcategoryId, getAllMainHeadlinesProducts, getAllLatestNewsProducts, updateProductStatusToSave, getSavedProductsByUserId, updateProductStatusToUnSave, updateProductStatusToUnsave,  } = require('../../controller/admin/ProductController');
 
 const upload = require('../../middleware/multer');
 // repoerter
 router.post('/createProductByReporter', upload.single('image'), createProductByReporter);
 router.put('/statusSave/:productId',updateProductStatusToSave);
+router.put('/statusUnSave/:productId',updateProductStatusToUnsave);
 // router.put('/statusSave/:productId',updateProductStatusToSave);
 
 router.get('/getSavedProductsByUserId/:userId', getSavedProductsByUserId);

@@ -488,6 +488,60 @@ exports.updateProductStatusToSave = async (req, res) => {
     }
   };
   
+  exports.updateProductStatusToUnsave = async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const { userId } = req.body;
+  
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+  
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return res.status(400).json({ error: 'Invalid productId' });
+      }
+  
+      const objectProductId = new mongoose.Types.ObjectId(productId);
+  
+      // Find the main product that contains the given productId
+      const mainProduct = await Product.findOne({
+        'subcategories.products._id': objectProductId
+      });
+  
+      if (!mainProduct) {
+        return res.status(404).json({ error: 'Product not found in any subcategory' });
+      }
+  
+      let found = false;
+      for (const sub of mainProduct.subcategories) {
+        const prod = sub.products.id(productId);
+        if (prod) {
+          // Unsave logic
+          prod.savedBy = prod.savedBy.filter(id => id !== userId);
+  
+          // If no more users saved it, set isSave to false
+          if (prod.savedBy.length === 0) {
+            prod.isSave = false;
+          }
+  
+          found = true;
+          break;
+        }
+      }
+  
+      if (!found) {
+        return res.status(404).json({ error: 'Product ID not found inside subcategories' });
+      }
+  
+      await mainProduct.save();
+  
+      res.status(200).json({ message: 'Product unsaved by user successfully' });
+    } catch (error) {
+      console.error('Unsave product error:', error);
+      res.status(500).json({ error: 'Failed to unsave product' });
+    }
+  };
+  
 
 
 exports.getSavedProductsByUserId = async (req, res) => {
