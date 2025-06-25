@@ -17,11 +17,7 @@ const gallerySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  shopId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Shop',
-    required: true,
-  },
+  
 }, { timestamps: true });
 
 module.exports = mongoose.model('gallery', gallerySchema);

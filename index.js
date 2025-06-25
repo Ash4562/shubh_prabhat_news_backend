@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
 require('dotenv').config();
-
+// require('./middleware/cron/autoDeleteGallery')
 const app = express();
 
 app.use(express.json());
@@ -26,7 +26,6 @@ app.use("/shop/pickup", require("./routes/conatct/PickupRoutes"));
 app.use("/reporter/auth", require("./routes/shop/shopAuthroutes"));
 app.use('/shop/notes', require('./routes/shop/ShotNoteRoutes'));
 // photo
-app.use('/shop/gallery', require('./routes/shop/GalleryRoutes'));
 // user
 app.use('/user/auth', require('./routes/user/userAuthRoutes'));
 app.use('/user/address', require('./routes/user/userAddressRoutes'));
@@ -38,6 +37,7 @@ app.use('/admin/categories', require('./routes/admin/serviceRoutes'));
 app.use('/admin/subcategories', require('./routes/admin/ProductRoutes'));
 app.use('/admin/auth', require('./routes/admin/authRoutes'));
 app.use('/admin/offer', require('./routes/admin/OfferRoutes'));
+app.use('/admin/pdf', require('./routes/shop/GalleryRoutes'));
 
 mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
