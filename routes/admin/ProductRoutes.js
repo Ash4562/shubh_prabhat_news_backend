@@ -7,8 +7,8 @@ const { createProduct, getProductsByService, deleteProductById, updateProductByI
 const upload = require('../../middleware/multer');
 // repoerter
 router.post('/createProductByReporter', upload.single('image'), createProductByReporter);
-router.put('/status/:productId',updateProductStatusByProductId);
 router.put('/statusSave/:productId',updateProductStatusToSave);
+// router.put('/statusSave/:productId',updateProductStatusToSave);
 
 router.get('/getSavedProductsByUserId/:userId', getSavedProductsByUserId);
 router.get('/getByreporter/:reporterId', getProductsByReporterId);

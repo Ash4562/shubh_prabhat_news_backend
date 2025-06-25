@@ -149,7 +149,7 @@ exports.getAllReporters = async (req, res) => {
 
 exports.getAllPendingReporters = async (req, res) => {
   try {
-    const reporters = await Reporter.find({ isApproved: 'pending' });
+    const reporters = await Reporter.find({ isApprovedg: 'pending' });
     res.status(200).json({ success: true, reporters });
   } catch (error) {
     console.error('Fetch reporters error:', error);

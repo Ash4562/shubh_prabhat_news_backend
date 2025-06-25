@@ -105,6 +105,7 @@ const ProductSchema = new mongoose.Schema({
             enum: ['pending', 'approved', 'rejected','MainHeadlines','LatestNews',"save"],
             default: 'pending'
           },    date: { type: Date, default: Date.now }  ,
+          isSave:{type:Boolean,default:false},
           savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
         },
       ],
