@@ -110,7 +110,8 @@ const ProductSchema = new mongoose.Schema({
           like: { type: Boolean, default: false },
           view: { type: Boolean, default: false },
           savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-          LikeBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+          LikeBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+          ViewBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
         },
       ],
     },
