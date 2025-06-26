@@ -265,17 +265,28 @@ exports.getAllMainHeadlinesProducts = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch MainHeadlines products' });
   }
 };
+
 exports.getAllLatestNewsProducts = async (req, res) => {
   try {
     const products = await Product.find();
 
     const allLatestNews = [];
 
-    products.forEach((product) => {
-      product.subcategories.forEach((subcategory) => {
-        const latestNewsProducts = (subcategory.products || []).filter(
-          (p) => p.status === 'LatestNews'
-        );
+    for (const product of products) {
+      for (const subcategory of product.subcategories || []) {
+        const latestNewsProducts = [];
+
+        for (const p of subcategory.products || []) {
+          if (p.status === 'LatestNews') {
+            // Populate reporterId manually
+            const reporter = await Reporter.findById(p.reporterId).select('ReporterName email contactNo');
+
+            const prodObj = p.toObject();
+            prodObj.reporter = reporter; // attach populated reporter
+
+            latestNewsProducts.push(prodObj);
+          }
+        }
 
         if (latestNewsProducts.length > 0) {
           allLatestNews.push({
@@ -285,8 +296,8 @@ exports.getAllLatestNewsProducts = async (req, res) => {
             products: latestNewsProducts,
           });
         }
-      });
-    });
+      }
+    }
 
     if (allLatestNews.length === 0) {
       return res.status(404).json({ message: 'No LatestNews products found' });
@@ -298,7 +309,6 @@ exports.getAllLatestNewsProducts = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch LatestNews products' });
   }
 };
-
 
 
 
@@ -941,6 +951,7 @@ exports.getAllSubcategories = async (req, res) => {
   }
 };
 // for users
+
 exports.getAllNew = async (req, res) => {
   try {
     const products = await Product.find({}, 'subcategories');
@@ -949,22 +960,33 @@ exports.getAllNew = async (req, res) => {
       return res.status(404).json({ message: 'No subcategories found' });
     }
 
-    // Flatten and filter subcategories to include only approved products
-    const allSubcategories = products.flatMap(product =>
-      (product.subcategories || []).map(subcat => {
-        // Filter approved products
-        const approvedProducts = (subcat.products || []).filter(
-          prod => prod.status === 'approved'
-        );
+    const allSubcategories = [];
 
-        return {
-          _id: subcat._id,
-          name: subcat.name,
-          date: subcat.date,
-          products: approvedProducts
-        };
-      })
-    );
+    for (const product of products) {
+      for (const subcat of product.subcategories || []) {
+        const approvedProducts = [];
+
+        for (const prod of subcat.products || []) {
+          if (prod.status === 'approved') {
+            const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo');
+
+            const prodObj = prod.toObject();
+            prodObj.reporter = reporter;
+
+            approvedProducts.push(prodObj);
+          }
+        }
+
+        if (approvedProducts.length > 0) {
+          allSubcategories.push({
+            _id: subcat._id,
+            name: subcat.name,
+            date: subcat.date,
+            products: approvedProducts
+          });
+        }
+      }
+    }
 
     res.status(200).json({ subcategories: allSubcategories });
   } catch (err) {
