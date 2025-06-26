@@ -22,12 +22,20 @@
 
 const express = require('express');
 const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters } = require('../../controller/shop/shopAuthcontroller');
+const upload = require('../../middleware/multer');
 const router = express.Router();
 
 // const reporterController = require('../controllers/reporterController');
 
 // Reporter Registration (no OTP yet)
-router.post('/register',registerReporter);
+
+router.post(
+    '/register',
+    upload.fields([
+        { name: 'AadharCardImage', maxCount: 1 },
+        { name: 'ReporterProfile', maxCount: 1 }
+      ]),registerReporter
+  );
 
 // Admin approval (change isApproved to 'approved' or 'rejected')
 router.patch('/approve/:id',updateReporterStatus);

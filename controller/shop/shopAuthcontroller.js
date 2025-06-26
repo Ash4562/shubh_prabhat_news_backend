@@ -2,6 +2,8 @@ const Reporter = require('../../models/shop/shopAuthModel');
 const jwt = require('jsonwebtoken');
 const sendOTP = require('../../utils/sendOTP');
 
+const cloudinary = require('../../utils/cloudinary'); 
+
 exports.registerReporter = async (req, res) => {
   try {
     const { ReporterName, email, contactNo, address } = req.body;
@@ -10,22 +12,35 @@ exports.registerReporter = async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    if (!req.files || !req.files.AadharCardImage || !req.files.ReporterProfile) {
+      return res.status(400).json({ error: 'Aadhar card and profile image are required' });
+    }
+    
+    const aadharUpload = await cloudinary.uploader.upload(req.files.AadharCardImage[0].path);
+    const profileUpload = await cloudinary.uploader.upload(req.files.ReporterProfile[0].path);
+    
+
+    // Create reporter
     const newReporter = new Reporter({
       ReporterName,
       email: email.toLowerCase().trim(),
       contactNo,
-      address
+      address,
+      AadharCardImage: aadharUpload.secure_url,
+      ReporterProfile: profileUpload.secure_url,
     });
 
     await newReporter.save();
 
-    res.status(201).json({ message: 'Reporter registered successfully, pending approval.', reporter: newReporter });
+    res.status(201).json({
+      message: 'Reporter registered successfully, pending approval.',
+      reporter: newReporter
+    });
   } catch (error) {
     console.error('Registration Error:', error);
     res.status(500).json({ error: 'Failed to register reporter' });
   }
 };
-
 exports.updateReporterStatus = async (req, res) => {
   try {
     const { id } = req.params;

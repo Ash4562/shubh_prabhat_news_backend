@@ -20,6 +20,8 @@ const ReporterSchema = new mongoose.Schema({
   contactNo: String,
   address: String,
   otp: String,
+  AadharCardImage:{type:String,required:true},
+  ReporterProfile:String,
   otpExpiry: Date,
   isApproved: {
     type: String,
