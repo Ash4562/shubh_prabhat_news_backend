@@ -62,7 +62,7 @@
 //             default: 'pending'
 //           }
 //         },
-        
+
 //       ],
 //     },
 //   ],
@@ -80,10 +80,10 @@ const ProductSchema = new mongoose.Schema({
     ref: 'Service',
     required: true,
   },
-  
+
   subcategories: [
     {
-     
+
       _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
       name: { type: String, required: true },
       date: { type: Date, default: Date.now },
@@ -94,7 +94,7 @@ const ProductSchema = new mongoose.Schema({
           MainHeadline: { type: String, required: true },
           Subheadline: { type: String, required: true },
           Description: { type: String, required: true },
-          image: { type: String},
+          image: { type: String },
           reporterId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Reporter',
@@ -102,15 +102,19 @@ const ProductSchema = new mongoose.Schema({
           },
           status: {
             type: String,
-            enum: ['pending', 'approved', 'rejected','MainHeadlines','LatestNews',"save"],
+            enum: ['pending', 'approved', 'rejected', 'MainHeadlines', 'LatestNews', "save"],
             default: 'pending'
-          },    date: { type: Date, default: Date.now }  ,
-          isSave:{type:Boolean,default:false},
-          savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+          },
+           date: { type: Date, default: Date.now },
+          isSave: { type: Boolean, default: false },  
+          like: { type: Boolean, default: false },
+          view: { type: Boolean, default: false },
+          savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+          LikeBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
         },
       ],
     },
   ],
-},{ timestamps: true });
+}, { timestamps: true });
 
 module.exports = mongoose.model('Product', ProductSchema);

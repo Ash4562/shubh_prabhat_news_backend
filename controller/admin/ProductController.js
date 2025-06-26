@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const Product = require("../../models/admin/Product");
-
+const Reporter = require('../../models/shop/shopAuthModel');
 
 
 // 📤 Create Product under a Subcategory
@@ -512,14 +512,17 @@ exports.updateProductStatusToSave = async (req, res) => {
         return res.status(404).json({ error: 'Product not found in any subcategory' });
       }
   
+
+
+
       let found = false;
       for (const sub of mainProduct.subcategories) {
         const prod = sub.products.id(productId);
         if (prod) {
-          // Unsave logic
-          prod.savedBy = prod.savedBy.filter(id => id !== userId);
+          // ✅ Remove userId from LikeBy array safely
+          prod.savedBy = prod.savedBy.filter(id => id.toString() !== userId);
   
-          // If no more users saved it, set isSave to false
+          // ✅ If no likes left, set like to false
           if (prod.savedBy.length === 0) {
             prod.isSave = false;
           }
@@ -528,6 +531,23 @@ exports.updateProductStatusToSave = async (req, res) => {
           break;
         }
       }
+
+      // let found = false;
+      // for (const sub of mainProduct.subcategories) {
+      //   const prod = sub.products.id(productId);
+      //   if (prod) {
+      //     // Unsave logic
+      //     prod.savedBy = prod.savedBy.filter(id => id !== userId);
+  
+      //     // If no more users saved it, set isSave to false
+      //     if (prod.savedBy.length === 0) {
+      //       prod.isSave = false;
+      //     }
+  
+      //     found = true;
+      //     break;
+      //   }
+      // }
   
       if (!found) {
         return res.status(404).json({ error: 'Product ID not found inside subcategories' });
@@ -541,6 +561,113 @@ exports.updateProductStatusToSave = async (req, res) => {
       res.status(500).json({ error: 'Failed to unsave product' });
     }
   };
+  
+exports.likeNews = async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const { userId } = req.body;
+  
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+  
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return res.status(400).json({ error: 'Invalid productId' });
+      }
+  
+      const objectProductId = new mongoose.Types.ObjectId(productId);
+  
+      // Find the main product that contains the given productId
+      const mainProduct = await Product.findOne({
+        'subcategories.products._id': objectProductId
+      });
+  
+      if (!mainProduct) {
+        return res.status(404).json({ error: 'Product not found in any subcategory' });
+      }
+  
+      let found = false;
+      for (const sub of mainProduct.subcategories) {
+        const prod = sub.products.id(productId);
+        if (prod) {
+          // Save logic
+          if (!prod.LikeBy.includes(userId)) {
+            prod.LikeBy.push(userId);
+          }
+          prod.like = true;
+  
+          found = true;
+          break;
+        }
+      }
+  
+      if (!found) {
+        return res.status(404).json({ error: 'Product ID not found inside subcategories' });
+      }
+  
+      await mainProduct.save();
+  
+      res.status(200).json({ message: 'Product saved by user successfully' });
+    } catch (error) {
+      console.error('Save product error:', error);
+      res.status(500).json({ error: 'Failed to save product' });
+    }
+  };
+  
+  exports.unlikeNews = async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const { userId } = req.body;
+  
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+  
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return res.status(400).json({ error: 'Invalid productId' });
+      }
+  
+      const objectProductId = new mongoose.Types.ObjectId(productId);
+  
+      // Find the main product that contains the given productId
+      const mainProduct = await Product.findOne({
+        'subcategories.products._id': objectProductId
+      });
+  
+      if (!mainProduct) {
+        return res.status(404).json({ error: 'Product not found in any subcategory' });
+      }
+  
+      let found = false;
+      for (const sub of mainProduct.subcategories) {
+        const prod = sub.products.id(productId);
+        if (prod) {
+          // ✅ Remove userId from LikeBy array safely
+          prod.LikeBy = prod.LikeBy.filter(id => id.toString() !== userId);
+  
+          // ✅ If no likes left, set like to false
+          if (prod.LikeBy.length === 0) {
+            prod.like = false;
+          }
+  
+          found = true;
+          break;
+        }
+      }
+  
+      if (!found) {
+        return res.status(404).json({ error: 'Product ID not found inside subcategories' });
+      }
+  
+      await mainProduct.save();
+  
+      res.status(200).json({ message: 'Product unliked by user successfully' });
+    } catch (error) {
+      console.error('Unsave product error:', error);
+      res.status(500).json({ error: 'Failed to unlike product' });
+    }
+  };
+  
   
 
 
@@ -792,6 +919,8 @@ exports.getAllNew = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch all subcategories' });
   }
 };
+
+
 exports.getAllPending = async (req, res) => {
   try {
     const products = await Product.find({}, 'subcategories');
@@ -800,22 +929,35 @@ exports.getAllPending = async (req, res) => {
       return res.status(404).json({ message: 'No subcategories found' });
     }
 
-    // Flatten and filter subcategories to include only approved products
-    const allSubcategories = products.flatMap(product =>
-      (product.subcategories || []).map(subcat => {
-        // Filter approved products
-        const approvedProducts = (subcat.products || []).filter(
-          prod => prod.status === 'pending'
-        );
+    const allSubcategories = [];
 
-        return {
-          _id: subcat._id,
-          name: subcat.name,
-          date: subcat.date,
-          products: approvedProducts
-        };
-      })
-    );
+    for (const product of products) {
+      for (const subcat of product.subcategories || []) {
+        const pendingProducts = [];
+
+        for (const prod of subcat.products || []) {
+          if (prod.status === 'pending') {
+            // Manually populate reporterId
+            const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo ReporterProfile');
+
+            // Convert to plain object and attach populated reporter
+            const prodObj = prod.toObject();
+            prodObj.reporter = reporter; // attach as 'reporter' key
+
+            pendingProducts.push(prodObj);
+          }
+        }
+
+        if (pendingProducts.length > 0) {
+          allSubcategories.push({
+            _id: subcat._id,
+            name: subcat.name,
+            date: subcat.date,
+            products: pendingProducts
+          });
+        }
+      }
+    }
 
     res.status(200).json({ subcategories: allSubcategories });
   } catch (err) {
@@ -823,6 +965,7 @@ exports.getAllPending = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch all subcategories' });
   }
 };
+
 
 
 // 📥 Get All Products by Service ID
