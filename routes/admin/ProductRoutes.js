@@ -8,6 +8,7 @@ const upload = require('../../middleware/multer');
 // repoerter
 router.post('/createProductByReporter', upload.single('image'), createProductByReporter);
 router.put('/statusSave/:productId',updateProductStatusToSave);
+router.put('/status/:productId',updateProductStatusByProductId);
 router.put('/statusUnSave/:productId',updateProductStatusToUnsave);
 
 router.put('/likeNews/:productId',likeNews);
@@ -34,8 +35,6 @@ router.get('/getallPendingNews', getAllPending);
 // subcategories/getSubcategoryById/:subcategoryId
 // 🔵 Get Products by Service ID
 router.get('/service/:serviceId', getProductsByService);
-
-// 🟡 Update Product
 
 
 

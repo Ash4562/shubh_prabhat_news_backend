@@ -180,8 +180,6 @@ exports.createProductToMainHeadlines = async (req, res) => {
 };
 
 
-
-
 exports.createProductToLatestNews = async (req, res) => {
   try {
     const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
@@ -225,12 +223,6 @@ exports.createProductToLatestNews = async (req, res) => {
     res.status(500).json({ error: 'Failed to create product' });
   }
 };
-
-
-
-
-
-
 
 exports.getAllMainHeadlinesProducts = async (req, res) => {
   try {
@@ -311,10 +303,6 @@ exports.getAllLatestNewsProducts = async (req, res) => {
 };
 
 
-
-
-
-
 exports.getProductsByReporterId = async (req, res) => {
   try {
     const { reporterId } = req.params;
@@ -346,104 +334,47 @@ exports.getProductsByReporterId = async (req, res) => {
 };
 
 
-// exports.updateProductStatusByProductId = async (req, res) => {
-//   try {
-//     const { productId } = req.params;
-//     const { status } = req.body;
+exports.updateProductStatusByProductId = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { status } = req.body;
 
-//     if (!['pending', 'approved', 'rejected','MainHeadlines','LatestNews'].includes(status)) {
-//       return res.status(400).json({ error: 'Invalid status value' });
-//     }
+    if (!['pending', 'approved', 'rejected','MainHeadlines','LatestNews'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
 
-//     // Find the main product doc that contains this productId anywhere
-//     const mainProduct = await Product.findOne({
-//       'subcategories.products._id': productId
-//     });
+    // Find the main product doc that contains this productId anywhere
+    const mainProduct = await Product.findOne({
+      'subcategories.products._id': productId
+    });
 
-//     if (!mainProduct) {
-//       return res.status(404).json({ error: 'Product not found in any subcategory' });
-//     }
+    if (!mainProduct) {
+      return res.status(404).json({ error: 'Product not found in any subcategory' });
+    }
 
-//     let found = false;
-//     for (const sub of mainProduct.subcategories) {
-//       const prod = sub.products.id(productId);
-//       if (prod) {
-//         prod.status = status;
-//         found = true;
-//         break;
-//       }
-//     }
+    let found = false;
+    for (const sub of mainProduct.subcategories) {
+      const prod = sub.products.id(productId);
+      if (prod) {
+        prod.status = status;
+        found = true;
+        break;
+      }
+    }
 
-//     if (!found) {
-//       return res.status(404).json({ error: 'Product ID not found' });
-//     }
+    if (!found) {
+      return res.status(404).json({ error: 'Product ID not found' });
+    }
 
-//     await mainProduct.save();
+    await mainProduct.save();
 
-//     res.status(200).json({ message: `Product status updated to ${status}` });
-//   } catch (error) {
-//     console.error('Update product status by productId error:', error);
-//     res.status(500).json({ error: 'Failed to update product status' });
-//   }
-// };
+    res.status(200).json({ message: `Product status updated to ${status}` });
+  } catch (error) {
+    console.error('Update product status by productId error:', error);
+    res.status(500).json({ error: 'Failed to update product status' });
+  }
+};
 
-// exports.updateProductStatusToSave = async (req, res) => {
-//   try {
-//     const { productId } = req.params;
-//     const { status, userId } = req.body;
-
-//     const validStatuses = ['pending', 'approved', 'rejected', 'MainHeadlines', 'LatestNews', 'save'];
-//     if (!validStatuses.includes(status)) {
-//       return res.status(400).json({ error: 'Invalid status value' });
-//     }
-
-//     if (!mongoose.Types.ObjectId.isValid(productId)) {
-//       return res.status(400).json({ error: 'Invalid productId' });
-//     }
-
-//     if (status === 'save' && !mongoose.Types.ObjectId.isValid(userId)) {
-//       return res.status(400).json({ error: 'Invalid userId for save' });
-//     }
-
-//     const mainProduct = await Product.findOne({
-//       'subcategories.products._id': productId
-//     });
-
-//     if (!mainProduct) {
-//       return res.status(404).json({ error: 'Product not found in any subcategory' });
-//     }
-
-//     let found = false;
-//     for (const sub of mainProduct.subcategories) {
-//       const prod = sub.products.id(productId);
-//       if (prod) {
-//         prod.status = status;
-
-//         if (status === 'save') {
-//           // Prevent duplicate userId in savedBy[]
-//           if (!prod.savedBy) prod.savedBy = [];
-//           if (!prod.savedBy.includes(userId)) {
-//             prod.savedBy.push(userId);
-//           }
-//         }
-
-//         found = true;
-//         break;
-//       }
-//     }
-
-//     if (!found) {
-//       return res.status(404).json({ error: 'Product ID not found' });
-//     }
-
-//     await mainProduct.save();
-
-//     res.status(200).json({ message: `Product status updated to ${status}` });
-//   } catch (error) {
-//     console.error('Update product status by productId error:', error);
-//     res.status(500).json({ error: 'Failed to update product status' });
-//   }
-// };
 
 
 exports.updateProductStatusToSave = async (req, res) => {
@@ -617,7 +548,7 @@ exports.likeNews = async (req, res) => {
 
     await mainProduct.save();
 
-    res.status(200).json({ message: 'Product saved by user successfully' });
+    res.status(200).json({ message: 'Product Like  by user successfully' });
   } catch (error) {
     console.error('Save product error:', error);
     res.status(500).json({ error: 'Failed to save product' });
@@ -730,10 +661,6 @@ exports.ViewNews = async (req, res) => {
 };
 
 
-
-
-
-
 exports.getSavedProductsByUserId = async (req, res) => {
   const { userId } = req.params;
 
@@ -763,8 +690,6 @@ exports.getSavedProductsByUserId = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch saved products' });
   }
 };
-
-
 
 
 exports.getProductsBySubcategoryId = async (req, res) => {
@@ -830,10 +755,6 @@ exports.getProductsBySubcategoryId = async (req, res) => {
   }
 };
 
-
-
-
-
 exports.addSubcategory = async (req, res) => {
   try {
     const { serviceId, subcategoryName, date } = req.body;
@@ -875,7 +796,6 @@ exports.addSubcategory = async (req, res) => {
     res.status(500).json({ error: 'Failed to add subcategory' });
   }
 };
-
 
 
 
@@ -1080,7 +1000,6 @@ exports.getProductsByService = async (req, res) => {
   }
 };
 
-
 // 🖊️ Update a Specific Product inside Subcategory
 exports.updateProductById = async (req, res) => {
   try {
@@ -1134,8 +1053,6 @@ exports.updateProductById = async (req, res) => {
 };
 
 
-
-
 exports.deleteProductById = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -1174,10 +1091,6 @@ exports.deleteProductById = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete product' });
   }
 };
-
-
-
-
 
 
 exports.deleteSubcategories = async (req, res) => {
