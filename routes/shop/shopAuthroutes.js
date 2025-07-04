@@ -21,7 +21,7 @@
 
 
 const express = require('express');
-const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters } = require('../../controller/shop/shopAuthcontroller');
+const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters, deleteReporter } = require('../../controller/shop/shopAuthcontroller');
 const upload = require('../../middleware/multer');
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router.post(
 
 // Admin approval (change isApproved to 'approved' or 'rejected')
 router.patch('/approve/:id',updateReporterStatus);
-
+router.delete('/delete/:id',deleteReporter);
 // Login - send OTP (only for approved reporters)
 router.post('/login',login);
 

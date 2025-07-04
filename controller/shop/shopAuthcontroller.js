@@ -223,6 +223,23 @@ exports.logoutReporter = async (req, res) => {
 
 
 
+exports.deleteReporter = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const ReprterShop = await Reporter.findByIdAndDelete(id);
+
+    if (!ReprterShop) {
+      return res.status(404).json({ error: 'Reprter not found' });
+    }
+
+    res.status(200).json({ message: 'Reprter deleted successfully' });
+  } catch (err) {
+    console.error('Delete shop error:', err);
+    res.status(500).json({ error: 'Failed to delete shop' });
+  }
+};
+
 
 
 
