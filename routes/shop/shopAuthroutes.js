@@ -15,13 +15,12 @@
 // .get('/getShopServicesGallerys/:shopId', authController.getShopWithServicesGallery)
 // .get('/shops', authController.getAllShops)
 // .put('/update/:shopId', upload.single('image'), authController.updateShopDetails)
-// .delete('/delete/:shopId', authController.deleteShop);
 // module.exports = router;
 
 
 
 const express = require('express');
-const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters } = require('../../controller/shop/shopAuthcontroller');
+const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters, deleteReporter } = require('../../controller/shop/shopAuthcontroller');
 const upload = require('../../middleware/multer');
 const router = express.Router();
 
@@ -30,12 +29,13 @@ const router = express.Router();
 // Reporter Registration (no OTP yet)
 
 router.post(
-    '/register',
-    upload.fields([
-        { name: 'AadharCardImage', maxCount: 1 },
-        { name: 'ReporterProfile', maxCount: 1 }
-      ]),registerReporter
+  '/register',
+  upload.fields([
+    { name: 'AadharCardImage', maxCount: 1 },
+    { name: 'ReporterProfile', maxCount: 1 }
+  ]),registerReporter
   );
+  router.delete('/delete/:id',deleteReporter);
 
 // Admin approval (change isApproved to 'approved' or 'rejected')
 router.patch('/approve/:id',updateReporterStatus);

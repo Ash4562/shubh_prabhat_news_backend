@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // const upload = require('../../middleware/multer');
-const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId, getAllNew, getAllPending, getProductsBySubcategoryId, createProductToLatestNews, createProductToMainHeadlines, getMainHeadlinesBySubcategoryId, getAllMainHeadlinesProducts, getAllLatestNewsProducts, updateProductStatusToSave, getSavedProductsByUserId, updateProductStatusToUnSave, updateProductStatusToUnsave, likeNews, UnlikeNew, unlikeNews, ViewNews,  } = require('../../controller/admin/ProductController');
+const { createProduct, getProductsByService, deleteProductById, updateProductById, createOnlySubcategory, deleteSubcategories, addSubcategory, getAllSubcategories, createProductByReporter, updateProductStatusByProductId, getProductsByReporterId, getAllNew, getAllPending, getProductsBySubcategoryId, createProductToLatestNews, createProductToMainHeadlines, getMainHeadlinesBySubcategoryId, getAllMainHeadlinesProducts, getAllLatestNewsProducts, updateProductStatusToSave, getSavedProductsByUserId, updateProductStatusToUnSave, updateProductStatusToUnsave, likeNews, UnlikeNew, unlikeNews, ViewNews, updateSubcategory,  } = require('../../controller/admin/ProductController');
 
 const upload = require('../../middleware/multer');
 // repoerter
@@ -43,5 +43,6 @@ router.delete('/:productId', deleteProductById);
 
 router.put('/:productId', upload.single('image'), updateProductById);
 router.delete('/subcategories/:subcategoriesId', deleteSubcategories);
+router.put('/update/subcategories/:subcategoriesId', updateSubcategory);
 
 module.exports = router;

@@ -1178,3 +1178,39 @@ exports.deleteSubcategories = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete subcategory' });
   }
 };
+
+exports.updateSubcategory = async (req, res) => {
+  try {
+    const { subcategoriesId } = req.params;
+    const updateData = req.body; // e.g. { name: "New name", description: "Updated description" }
+
+    // Step 1: Find the product document that contains the subcategory
+    const productDoc = await Product.findOne({
+      "subcategories._id": subcategoriesId
+    });
+
+    if (!productDoc) {
+      return res.status(404).json({ error: 'Subcategory not found' });
+    }
+
+    // Step 2: Find and update the specific subcategory
+    const subcategory = productDoc.subcategories.id(subcategoriesId);
+    if (!subcategory) {
+      return res.status(404).json({ error: 'Subcategory not found for update' });
+    }
+
+    // Step 3: Apply the updates (only fields present in req.body)
+    Object.keys(updateData).forEach(key => {
+      subcategory[key] = updateData[key];
+    });
+
+    // Step 4: Save the updated product document
+    await productDoc.save();
+
+    return res.status(200).json({ message: 'Subcategory updated successfully', subcategory });
+
+  } catch (err) {
+    console.error('Update Subcategory Error:', err);
+    res.status(500).json({ error: 'Failed to update subcategory' });
+  }
+};
