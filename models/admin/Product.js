@@ -91,9 +91,9 @@ const ProductSchema = new mongoose.Schema({
       products: [
         {
           _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-          MainHeadline: { type: String, required: true },
-          Subheadline: { type: String, required: true },
-          Description: { type: String, required: true },
+          MainHeadline: { type: String },
+          Subheadline: { type: String },
+          Description: { type: String },
           image: { type: String },
           reporterId: {
             type: mongoose.Schema.Types.ObjectId,
