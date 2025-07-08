@@ -216,31 +216,21 @@ exports.createProduct = async (req, res) => {
       }
 
       for (const subcategoryId of subcategoryIds) {
-        let subcategory = mainProduct.subcategories.id(subcategoryId);
+        const subcategory = mainProduct.subcategories.id(subcategoryId);
 
         if (!subcategory) {
-          console.log(`📦 Subcategory not found: ${subcategoryId}. Creating with default name.`);
-          mainProduct.subcategories.push({
-            _id: subcategoryId,
-            name: "Auto Created",
-            products: []
-          });
-        
-          // Re-fetch after pushing
-          subcategory = mainProduct.subcategories.id(subcategoryId);
+          console.log(`❌ Subcategory ${subcategoryId} not found under service ${serviceId}, skipping.`);
+          continue; // ❌ Don't create, just skip
         }
 
-        if (subcategory) {
-          subcategory.products.push(productData);
-          insertedProducts.push({
-            serviceId,
-            subcategoryId,
-            ...productData
-          });
-          console.log(`✅ Product inserted into subcategory ${subcategoryId} of service ${serviceId}`);
-        } else {
-          console.log(`❌ Failed to access subcategory even after pushing: ${subcategoryId}`);
-        }
+        subcategory.products.push(productData);
+        insertedProducts.push({
+          serviceId,
+          subcategoryId,
+          ...productData
+        });
+
+        console.log(`✅ Product inserted into subcategory ${subcategoryId} of service ${serviceId}`);
       }
 
       await mainProduct.save();
@@ -248,7 +238,7 @@ exports.createProduct = async (req, res) => {
     }
 
     return res.status(201).json({
-      message: 'Product added to multiple services/subcategories successfully',
+      message: 'Product added to valid subcategories successfully',
       inserted: insertedProducts
     });
 
