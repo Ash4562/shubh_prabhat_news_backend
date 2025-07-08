@@ -24,6 +24,11 @@ router.get('/getAllLatestNewsProducts', getAllLatestNewsProducts);
 
 // 🟢 Create Product
 router.post('/addproduct', upload.single('image'), createProduct);
+// router.post(
+//     '/addproduct',
+//     upload.single('image'), // field name must match frontend
+//     createProduct
+//   );
 router.post('/createProductToLatestNews', upload.single('image'), createProductToLatestNews);
 router.post('/createProductToMainHeadlines', upload.single('image'), createProductToMainHeadlines);
 router.post('/addSubcategory', addSubcategory);

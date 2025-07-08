@@ -54,89 +54,360 @@ const Reporter = require('../../models/shop/shopAuthModel');
 //   }
 // };
 
+// exports.createProductByReporter = async (req, res) => {
+//   try {
+//     const { serviceId, subcategoryId, MainHeadline, Subheadline, Description, reporterId } = req.body;
+
+//     if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description || !reporterId || !req.file) {
+//       return res.status(400).json({ error: 'All fields are required including reporterId and image' });
+//     }
+
+//     const productData = {
+//       MainHeadline: MainHeadline.trim(),
+//       Subheadline: Subheadline.trim(),
+//       Description: Description.trim(),
+//       image: req.file.path,
+//       reporterId,
+//       status: 'pending',// default status
+//       date: new Date()
+//     };
+
+//     // Check if main product entry exists for this service
+//     let mainProduct = await Product.findOne({ service: serviceId });
+
+//     if (!mainProduct) {
+//       return res.status(404).json({ error: 'Main product not found for this service' });
+//     }
+
+//     // Find subcategory inside that document
+//     const subcategory = mainProduct.subcategories.id(subcategoryId);
+//     if (!subcategory) {
+//       return res.status(404).json({ error: 'Subcategory not found' });
+//     }
+
+//     // Add new product to subcategory
+//     subcategory.products.push(productData);
+//     await mainProduct.save();
+
+//     res.status(201).json({ message: 'Product added successfully and pending approval', product: mainProduct });
+//   } catch (err) {
+//     console.error('Create Product Error:', err);
+//     res.status(500).json({ error: 'Failed to create product' });
+//   }
+// };
+
+// const mongoose = require('mongoose');
 exports.createProductByReporter = async (req, res) => {
   try {
-    const { serviceId, subcategoryId, MainHeadline, Subheadline, Description, reporterId } = req.body;
+    const { MainHeadline, Subheadline, Description, reporterId } = req.body;
+    const serviceIds = JSON.parse(req.body.serviceIds || '[]');
+    const subcategoryMap = JSON.parse(req.body.subcategoryMap || '{}');
 
-    if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description || !reporterId || !req.file) {
-      return res.status(400).json({ error: 'All fields are required including reporterId and image' });
+    if (
+      !serviceIds.length ||
+      !Object.keys(subcategoryMap).length ||
+      !MainHeadline ||
+      !Subheadline ||
+      !Description ||
+      !reporterId ||
+      !req.file
+    ) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const productData = {
+      _id: new mongoose.Types.ObjectId(),
       MainHeadline: MainHeadline.trim(),
       Subheadline: Subheadline.trim(),
       Description: Description.trim(),
       image: req.file.path,
       reporterId,
-      status: 'pending',// default status
+      status: 'pending',
       date: new Date()
     };
 
-    // Check if main product entry exists for this service
-    let mainProduct = await Product.findOne({ service: serviceId });
+    const insertedProducts = [];
 
-    if (!mainProduct) {
-      return res.status(404).json({ error: 'Main product not found for this service' });
+    for (const serviceId of serviceIds) {
+      const subcategoryIds = subcategoryMap[serviceId];
+      if (!Array.isArray(subcategoryIds)) continue;
+
+      const mainProduct = await Product.findOne({ service: serviceId });
+      if (!mainProduct) continue;
+
+      for (const subcategoryId of subcategoryIds) {
+        const subcategory = mainProduct.subcategories.id(subcategoryId);
+
+        if (!subcategory) {
+          console.log(`❌ Subcategory not found: ${subcategoryId}`);
+          continue;
+        }
+
+        subcategory.products.push(productData);
+        insertedProducts.push({
+          serviceId,
+          subcategoryId,
+          ...productData
+        });
+      }
+
+      await mainProduct.save();
     }
 
-    // Find subcategory inside that document
-    const subcategory = mainProduct.subcategories.id(subcategoryId);
-    if (!subcategory) {
-      return res.status(404).json({ error: 'Subcategory not found' });
-    }
+    res.status(201).json({
+      message: 'Product added successfully to all valid subcategories',
+      inserted: insertedProducts
+    });
 
-    // Add new product to subcategory
-    subcategory.products.push(productData);
-    await mainProduct.save();
-
-    res.status(201).json({ message: 'Product added successfully and pending approval', product: mainProduct });
   } catch (err) {
     console.error('Create Product Error:', err);
     res.status(500).json({ error: 'Failed to create product' });
   }
 };
+
+
+
+// exports.createProduct = async (req, res) => {
+//   try {
+//     const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
+
+//     // Check required fields
+//     if (
+//       !serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description 
+//     ) {
+//       return res.status(400).json({ error: 'All fields are required including image' });
+//     }
+
+//     // Ensure arrays
+//     const serviceIds = Array.isArray(serviceId) ? serviceId : [serviceId];
+//     const subcategoryIds = Array.isArray(subcategoryId) ? subcategoryId : [subcategoryId];
+
+//     const productData = {
+//       MainHeadline: MainHeadline.trim(),
+//       Subheadline: Subheadline.trim(),
+//       Description: Description.trim(),
+//       image: req.file.path,
+//       status: 'approved',
+//       date: new Date()
+//     };
+
+//     const results = [];
+
+//     for (const sId of serviceIds) {
+//       let mainProduct = await Product.findOne({ service: sId });
+
+//       // If no main product for this service, create one
+//       if (!mainProduct) {
+//         mainProduct = new Product({
+//           service: sId,
+//           subcategories: []
+//         });
+//       }
+
+//       for (const subId of subcategoryIds) {
+//         // Find subcategory by ID
+//         let subcategory = mainProduct.subcategories.id(subId);
+
+//         // If subcategory doesn't exist, create it
+//         if (!subcategory) {
+//           subcategory = {
+//             _id: subId, // assuming subId is unique/mongo-style ID
+//             name: `Subcategory ${subId}`, // default name (optional - adjust as needed)
+//             products: []
+//           };
+//           mainProduct.subcategories.push(subcategory);
+//         }
+
+//         // Add product
+//         subcategory.products.addToSet(productData);
+//       }
+
+//       // Save updated main product
+//       await mainProduct.save();
+
+//       results.push({
+//         serviceId: sId,
+//         message: 'Product added to all matching subcategories'
+//       });
+//     }
+
+//     res.status(201).json({
+//       message: 'Product added successfully',
+//       results
+//     });
+//   } catch (err) {
+//     console.error('Create Product Error:', err);
+//     res.status(500).json({ error: 'Failed to create product' });
+//   }
+// };
+
+
 exports.createProduct = async (req, res) => {
   try {
-    const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
+    console.log("=== RAW BODY ===", req.body);
 
-    if (!serviceId || !subcategoryId || !MainHeadline || !Subheadline || !Description || !req.file) {
-      return res.status(400).json({ error: 'All fields are required including reporterId and image' });
+    const { MainHeadline, Subheadline, Description } = req.body;
+    const serviceIds = JSON.parse(req.body.serviceIds || '[]');
+    const subcategoryMap = JSON.parse(req.body.subcategoryMap || '{}');
+
+    if (
+      !serviceIds.length ||
+      !Object.keys(subcategoryMap).length ||
+      !MainHeadline ||
+      !Subheadline ||
+      !Description ||
+      !req.file
+    ) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const productData = {
+      _id: new mongoose.Types.ObjectId(),
       MainHeadline: MainHeadline.trim(),
       Subheadline: Subheadline.trim(),
       Description: Description.trim(),
       image: req.file.path,
-
       status: 'approved',
       date: new Date()
-      // default status
     };
 
-    // Check if main product entry exists for this service
-    let mainProduct = await Product.findOne({ service: serviceId });
+    const insertedProducts = [];
 
-    if (!mainProduct) {
-      return res.status(404).json({ error: 'Main product not found for this service' });
+    for (const serviceId of serviceIds) {
+      const subcategoryIds = subcategoryMap[serviceId]; // expecting array of subcategory _id
+      console.log(`🔎 ServiceID: ${serviceId}, Subcategory IDs:`, subcategoryIds);
+
+      if (!Array.isArray(subcategoryIds)) {
+        console.log(`⚠️ Invalid subcategory list for serviceId ${serviceId}`);
+        continue;
+      }
+
+      const mainProduct = await Product.findOne({ service: serviceId });
+      if (!mainProduct) {
+        console.log(`❌ No Product found for serviceId: ${serviceId}`);
+        continue;
+      }
+
+      for (const subcategoryId of subcategoryIds) {
+        let subcategory = mainProduct.subcategories.id(subcategoryId);
+
+        if (!subcategory) {
+          console.log(`📦 Subcategory not found: ${subcategoryId}. Creating with default name.`);
+          mainProduct.subcategories.push({
+            _id: subcategoryId,
+            name: "Auto Created",
+            products: []
+          });
+
+          // Re-fetch after pushing
+          subcategory = mainProduct.subcategories.id(subcategoryId);
+        }
+
+        if (subcategory) {
+          subcategory.products.push(productData);
+          insertedProducts.push({
+            serviceId,
+            subcategoryId,
+            ...productData
+          });
+          console.log(`✅ Product inserted into subcategory ${subcategoryId} of service ${serviceId}`);
+        } else {
+          console.log(`❌ Failed to access subcategory even after pushing: ${subcategoryId}`);
+        }
+      }
+
+      await mainProduct.save();
+      console.log(`💾 Saved product for service: ${serviceId}`);
     }
 
-    // Find subcategory inside that document
-    const subcategory = mainProduct.subcategories.id(subcategoryId);
-    if (!subcategory) {
-      return res.status(404).json({ error: 'Subcategory not found' });
-    }
+    return res.status(201).json({
+      message: 'Product added to multiple services/subcategories successfully',
+      inserted: insertedProducts
+    });
 
-    // Add new product to subcategory
-    subcategory.products.push(productData);
-    await mainProduct.save();
-
-    res.status(201).json({ message: 'Product added successfully and pending approval', product: mainProduct });
   } catch (err) {
     console.error('Create Product Error:', err);
-    res.status(500).json({ error: 'Failed to create product' });
+    return res.status(500).json({ error: 'Failed to create product' });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+// exports.createProduct = async (req, res) => {
+//   try {
+//     const { services, MainHeadline, Subheadline, Description } = req.body;
+
+//     if (
+//       !Array.isArray(services) ||
+//       !MainHeadline || !Subheadline || !Description
+//     ) {
+//       return res.status(400).json({ error: 'All fields are required including service-subcategory mapping' });
+//     }
+
+//     const productData = {
+//       MainHeadline: MainHeadline.trim(),
+//       Subheadline: Subheadline.trim(),
+//       Description: Description.trim(),
+//       image: req.file?.path || "",
+//       status: 'approved',
+//       date: new Date()
+//     };
+
+//     const results = [];
+
+//     for (const service of services) {
+//       const { serviceId, subcategoryIds } = service;
+
+//       const mainProduct = await Product.findOne({
+//         service: new mongoose.Types.ObjectId(serviceId)
+//       });
+
+//       if (!mainProduct) {
+//         results.push({ serviceId, error: 'Main product not found' });
+//         continue;
+//       }
+
+//       for (const subId of subcategoryIds) {
+//         let subcategory = mainProduct.subcategories.find(
+//           (sc) => sc._id.toString() === subId.toString()
+//         );
+
+//         if (!subcategory) {
+//           subcategory = {
+//             _id: new mongoose.Types.ObjectId(subId),
+//             name: "Untitled Subcategory",
+//             date: new Date(),
+//             products: []
+//           };
+//           mainProduct.subcategories.push(subcategory);
+//           results.push({ serviceId, subcategoryId: subId, message: 'Subcategory created' });
+//         }
+
+//         subcategory.products.push(productData);
+//         results.push({ serviceId, subcategoryId: subId, message: 'Product added' });
+//       }
+
+//       await mainProduct.save();
+//     }
+
+//     res.status(201).json({ message: 'Operation completed', results });
+
+//   } catch (err) {
+//     console.error('Create Product Error:', err);
+//     res.status(500).json({ error: 'Failed to create product' });
+//   }
+// };
+
 exports.createProductToMainHeadlines = async (req, res) => {
   try {
     const { serviceId, subcategoryId, MainHeadline, Subheadline, Description } = req.body;
