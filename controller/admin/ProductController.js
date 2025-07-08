@@ -97,6 +97,7 @@ const Reporter = require('../../models/shop/shopAuthModel');
 // };
 
 // const mongoose = require('mongoose');
+
 exports.createProductByReporter = async (req, res) => {
   try {
     const { MainHeadline, Subheadline, Description, reporterId } = req.body;
@@ -130,16 +131,22 @@ exports.createProductByReporter = async (req, res) => {
 
     for (const serviceId of serviceIds) {
       const subcategoryIds = subcategoryMap[serviceId];
-      if (!Array.isArray(subcategoryIds)) continue;
+      if (!Array.isArray(subcategoryIds)) {
+        console.log(`⚠️ Invalid subcategory list for serviceId: ${serviceId}`);
+        continue;
+      }
 
       const mainProduct = await Product.findOne({ service: serviceId });
-      if (!mainProduct) continue;
+      if (!mainProduct) {
+        console.log(`❌ No Product document found for serviceId: ${serviceId}`);
+        continue;
+      }
 
       for (const subcategoryId of subcategoryIds) {
         const subcategory = mainProduct.subcategories.id(subcategoryId);
 
         if (!subcategory) {
-          console.log(`❌ Subcategory not found: ${subcategoryId}`);
+          console.log(`❌ Subcategory not found: ${subcategoryId}. Skipping.`);
           continue;
         }
 
@@ -149,9 +156,11 @@ exports.createProductByReporter = async (req, res) => {
           subcategoryId,
           ...productData
         });
+        console.log(`✅ Inserted product into subcategory ${subcategoryId} of service ${serviceId}`);
       }
 
       await mainProduct.save();
+      console.log(`💾 Saved updates for service: ${serviceId}`);
     }
 
     res.status(201).json({
@@ -164,7 +173,6 @@ exports.createProductByReporter = async (req, res) => {
     res.status(500).json({ error: 'Failed to create product' });
   }
 };
-
 
 
 
@@ -201,7 +209,7 @@ exports.createProduct = async (req, res) => {
     const insertedProducts = [];
 
     for (const serviceId of serviceIds) {
-      const subcategoryIds = subcategoryMap[serviceId]; // expecting array of subcategory _id
+      const subcategoryIds = subcategoryMap[serviceId]; // expecting array of subcategory _ids
       console.log(`🔎 ServiceID: ${serviceId}, Subcategory IDs:`, subcategoryIds);
 
       if (!Array.isArray(subcategoryIds)) {
@@ -219,8 +227,8 @@ exports.createProduct = async (req, res) => {
         const subcategory = mainProduct.subcategories.id(subcategoryId);
 
         if (!subcategory) {
-          console.log(`❌ Subcategory ${subcategoryId} not found under service ${serviceId}, skipping.`);
-          continue; // ❌ Don't create, just skip
+          console.log(`❌ Subcategory not found: ${subcategoryId}. Skipping.`);
+          continue;
         }
 
         subcategory.products.push(productData);
@@ -229,7 +237,6 @@ exports.createProduct = async (req, res) => {
           subcategoryId,
           ...productData
         });
-
         console.log(`✅ Product inserted into subcategory ${subcategoryId} of service ${serviceId}`);
       }
 
@@ -238,7 +245,7 @@ exports.createProduct = async (req, res) => {
     }
 
     return res.status(201).json({
-      message: 'Product added to valid subcategories successfully',
+      message: 'Product added to multiple services/subcategories successfully',
       inserted: insertedProducts
     });
 
@@ -283,7 +290,10 @@ exports.createProductToMainHeadlines = async (req, res) => {
 
     for (const serviceId of serviceIds) {
       const subcategoryIds = subcategoryMap[serviceId];
-      if (!Array.isArray(subcategoryIds)) continue;
+      if (!Array.isArray(subcategoryIds)) {
+        console.log(`⚠️ Invalid subcategory list for serviceId: ${serviceId}`);
+        continue;
+      }
 
       const mainProduct = await Product.findOne({ service: serviceId });
       if (!mainProduct) {
@@ -292,28 +302,20 @@ exports.createProductToMainHeadlines = async (req, res) => {
       }
 
       for (const subcategoryId of subcategoryIds) {
-        let subcategory = mainProduct.subcategories.id(subcategoryId);
+        const subcategory = mainProduct.subcategories.id(subcategoryId);
 
         if (!subcategory) {
-          console.log(`⚠️ Subcategory not found: ${subcategoryId}. Creating with default name.`);
-          mainProduct.subcategories.push({
-            _id: subcategoryId,
-            name: "Auto Created",
-            products: []
-          });
-
-          // Re-fetch after push
-          subcategory = mainProduct.subcategories.id(subcategoryId);
+          console.log(`❌ Subcategory not found: ${subcategoryId}. Skipping.`);
+          continue;
         }
 
-        if (subcategory) {
-          subcategory.products.push(productData);
-          insertedProducts.push({
-            serviceId,
-            subcategoryId,
-            ...productData
-          });
-        }
+        subcategory.products.push(productData);
+        insertedProducts.push({
+          serviceId,
+          subcategoryId,
+          ...productData
+        });
+        console.log(`✅ Inserted into subcategory ${subcategoryId} of service ${serviceId}`);
       }
 
       await mainProduct.save();
@@ -321,7 +323,7 @@ exports.createProductToMainHeadlines = async (req, res) => {
     }
 
     return res.status(201).json({
-      message: 'MainHeadline product added successfully to all services/categories',
+      message: 'MainHeadline product added successfully to valid subcategories',
       MainHeadline: insertedProducts
     });
 
@@ -330,6 +332,7 @@ exports.createProductToMainHeadlines = async (req, res) => {
     return res.status(500).json({ error: 'Failed to create product' });
   }
 };
+
 
 
 exports.createProductToLatestNews = async (req, res) => {
@@ -363,7 +366,10 @@ exports.createProductToLatestNews = async (req, res) => {
 
     for (const serviceId of serviceIds) {
       const subcategoryIds = subcategoryMap[serviceId];
-      if (!Array.isArray(subcategoryIds)) continue;
+      if (!Array.isArray(subcategoryIds)) {
+        console.log(`⚠️ Invalid subcategory list for serviceId: ${serviceId}`);
+        continue;
+      }
 
       const serviceObjectId = new mongoose.Types.ObjectId(serviceId);
       let mainProduct = await Product.findOne({ service: serviceObjectId });
@@ -374,34 +380,28 @@ exports.createProductToLatestNews = async (req, res) => {
       }
 
       for (const subcategoryId of subcategoryIds) {
-        let subcategory = mainProduct.subcategories.id(subcategoryId);
+        const subcategory = mainProduct.subcategories.id(subcategoryId);
 
         if (!subcategory) {
-          console.log(`📁 Subcategory ${subcategoryId} not found. Creating new.`);
-          mainProduct.subcategories.push({
-            _id: subcategoryId,
-            name: 'Auto Created',
-            products: []
-          });
-          subcategory = mainProduct.subcategories.id(subcategoryId);
+          console.log(`❌ Subcategory not found: ${subcategoryId}. Skipping.`);
+          continue;
         }
 
-        if (subcategory) {
-          subcategory.products.push(productData);
-          insertedProducts.push({
-            serviceId,
-            subcategoryId,
-            ...productData
-          });
-        }
+        subcategory.products.push(productData);
+        insertedProducts.push({
+          serviceId,
+          subcategoryId,
+          ...productData
+        });
+        console.log(`✅ Inserted product into subcategory ${subcategoryId} of service ${serviceId}`);
       }
 
       await mainProduct.save();
-      console.log(`✅ Saved product for serviceId: ${serviceId}`);
+      console.log(`💾 Saved product for serviceId: ${serviceId}`);
     }
 
     return res.status(201).json({
-      message: 'Product added to LatestNews in multiple services/categories successfully',
+      message: 'Product added to LatestNews in valid subcategories successfully',
       inserted: insertedProducts
     });
 
@@ -410,6 +410,7 @@ exports.createProductToLatestNews = async (req, res) => {
     res.status(500).json({ error: 'Failed to create product' });
   }
 };
+
 
 exports.getAllMainHeadlinesProducts = async (req, res) => {
   try {
