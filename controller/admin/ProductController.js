@@ -225,7 +225,7 @@ exports.createProduct = async (req, res) => {
             name: "Auto Created",
             products: []
           });
-
+        
           // Re-fetch after pushing
           subcategory = mainProduct.subcategories.id(subcategoryId);
         }
