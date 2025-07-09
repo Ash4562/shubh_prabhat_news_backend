@@ -110,8 +110,8 @@ exports.createProductByReporter = async (req, res) => {
       !MainHeadline ||
       !Subheadline ||
       !Description ||
-      !reporterId ||
-      !req.file
+      !reporterId
+      // !req.file
     ) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
