@@ -90,7 +90,7 @@ const ProductSchema = new mongoose.Schema({
 
       products: [
         {
-          _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+          _id: { type: mongoose.Schema.Types.ObjectId, auto: true,unique:true },
           MainHeadline: { type: String },
           Subheadline: { type: String },
           Description: { type: String },

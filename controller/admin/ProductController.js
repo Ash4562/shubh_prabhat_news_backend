@@ -98,6 +98,7 @@ const Reporter = require('../../models/shop/shopAuthModel');
 
 // const mongoose = require('mongoose');
 
+
 exports.createProductByReporter = async (req, res) => {
   try {
     const { MainHeadline, Subheadline, Description, reporterId } = req.body;
@@ -115,17 +116,6 @@ exports.createProductByReporter = async (req, res) => {
     ) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-
-    const productData = {
-      _id: new mongoose.Types.ObjectId(),
-      MainHeadline: MainHeadline.trim(),
-      Subheadline: Subheadline.trim(),
-      Description: Description.trim(),
-      image: req.file.path,
-      reporterId,
-      status: 'pending',
-      date: new Date()
-    };
 
     const insertedProducts = [];
 
@@ -150,13 +140,25 @@ exports.createProductByReporter = async (req, res) => {
           continue;
         }
 
+        const productData = {
+          _id: new mongoose.Types.ObjectId(), // ✅ Unique _id per product
+          MainHeadline: MainHeadline.trim(),
+          Subheadline: Subheadline.trim(),
+          Description: Description.trim(),
+          image: req.file.path,
+          reporterId,
+          status: 'pending',
+          date: new Date()
+        };
+
         subcategory.products.push(productData);
         insertedProducts.push({
           serviceId,
           subcategoryId,
           ...productData
         });
-        console.log(`✅ Inserted product into subcategory ${subcategoryId} of service ${serviceId}`);
+
+        console.log(`✅ Inserted product into subcategory ${subcategoryId} of service ${serviceId} with ID ${productData._id}`);
       }
 
       await mainProduct.save();
@@ -174,6 +176,85 @@ exports.createProductByReporter = async (req, res) => {
   }
 };
 
+
+
+// exports.createProduct = async (req, res) => {
+//   try {
+//     console.log("=== RAW BODY ===", req.body);
+
+//     const { MainHeadline, Subheadline, Description } = req.body;
+//     const serviceIds = JSON.parse(req.body.serviceIds || '[]');
+//     const subcategoryMap = JSON.parse(req.body.subcategoryMap || '{}');
+
+//     if (
+//       !serviceIds.length ||
+//       !Object.keys(subcategoryMap).length ||
+//       !MainHeadline ||
+//       !Subheadline ||
+//       !Description ||
+//       !req.file
+//     ) {
+//       return res.status(400).json({ error: 'Missing required fields' });
+//     }
+
+//     const productData = {
+//       _id: new mongoose.Types.ObjectId(),
+//       MainHeadline: MainHeadline.trim(),
+//       Subheadline: Subheadline.trim(),
+//       Description: Description.trim(),
+//       image: req.file.path,
+//       status: 'approved',
+//       date: new Date()
+//     };
+
+//     const insertedProducts = [];
+
+//     for (const serviceId of serviceIds) {
+//       const subcategoryIds = subcategoryMap[serviceId]; // expecting array of subcategory _ids
+//       console.log(`🔎 ServiceID: ${serviceId}, Subcategory IDs:`, subcategoryIds);
+
+//       if (!Array.isArray(subcategoryIds)) {
+//         console.log(`⚠️ Invalid subcategory list for serviceId ${serviceId}`);
+//         continue;
+//       }
+
+//       const mainProduct = await Product.findOne({ service: serviceId });
+//       if (!mainProduct) {
+//         console.log(`❌ No Product found for serviceId: ${serviceId}`);
+//         continue;
+//       }
+
+//       for (const subcategoryId of subcategoryIds) {
+//         const subcategory = mainProduct.subcategories.id(subcategoryId);
+
+//         if (!subcategory) {
+//           console.log(`❌ Subcategory not found: ${subcategoryId}. Skipping.`);
+//           continue;
+//         }
+
+//         subcategory.products.push(productData);
+//         insertedProducts.push({
+//           serviceId,
+//           subcategoryId,
+//           ...productData
+//         });
+//         console.log(`✅ Product inserted into subcategory ${subcategoryId} of service ${serviceId}`);
+//       }
+
+//       await mainProduct.save();
+//       console.log(`💾 Saved product for service: ${serviceId}`);
+//     }
+
+//     return res.status(201).json({
+//       message: 'Product added to multiple services/subcategories successfully',
+//       inserted: insertedProducts
+//     });
+
+//   } catch (err) {
+//     console.error('Create Product Error:', err);
+//     return res.status(500).json({ error: 'Failed to create product' });
+//   }
+// };
 
 
 
@@ -195,16 +276,6 @@ exports.createProduct = async (req, res) => {
     ) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-
-    const productData = {
-      _id: new mongoose.Types.ObjectId(),
-      MainHeadline: MainHeadline.trim(),
-      Subheadline: Subheadline.trim(),
-      Description: Description.trim(),
-      image: req.file.path,
-      status: 'approved',
-      date: new Date()
-    };
 
     const insertedProducts = [];
 
@@ -231,13 +302,24 @@ exports.createProduct = async (req, res) => {
           continue;
         }
 
+        const productData = {
+          _id: new mongoose.Types.ObjectId(), // ✅ Unique ID generated each time
+          MainHeadline: MainHeadline.trim(),
+          Subheadline: Subheadline.trim(),
+          Description: Description.trim(),
+          image: req.file.path,
+          status: 'approved',
+          date: new Date()
+        };
+
         subcategory.products.push(productData);
         insertedProducts.push({
           serviceId,
           subcategoryId,
           ...productData
         });
-        console.log(`✅ Product inserted into subcategory ${subcategoryId} of service ${serviceId}`);
+
+        console.log(`✅ Inserted product with ID ${productData._id} into subcategory ${subcategoryId}`);
       }
 
       await mainProduct.save();
@@ -257,8 +339,6 @@ exports.createProduct = async (req, res) => {
 
 
 
-
-
 exports.createProductToMainHeadlines = async (req, res) => {
   try {
     const { MainHeadline, Subheadline, Description } = req.body;
@@ -275,16 +355,6 @@ exports.createProductToMainHeadlines = async (req, res) => {
     ) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-
-    const productData = {
-      _id: new mongoose.Types.ObjectId(),
-      MainHeadline: MainHeadline.trim(),
-      Subheadline: Subheadline.trim(),
-      Description: Description.trim(),
-      image: req.file.path,
-      status: 'MainHeadlines',
-      date: new Date()
-    };
 
     const insertedProducts = [];
 
@@ -309,13 +379,24 @@ exports.createProductToMainHeadlines = async (req, res) => {
           continue;
         }
 
+        const productData = {
+          _id: new mongoose.Types.ObjectId(), // ✅ generate unique _id here
+          MainHeadline: MainHeadline.trim(),
+          Subheadline: Subheadline.trim(),
+          Description: Description.trim(),
+          image: req.file.path,
+          status: 'MainHeadlines',
+          date: new Date()
+        };
+
         subcategory.products.push(productData);
         insertedProducts.push({
           serviceId,
           subcategoryId,
           ...productData
         });
-        console.log(`✅ Inserted into subcategory ${subcategoryId} of service ${serviceId}`);
+
+        console.log(`✅ Inserted into subcategory ${subcategoryId} of service ${serviceId} with ID ${productData._id}`);
       }
 
       await mainProduct.save();
@@ -352,16 +433,6 @@ exports.createProductToLatestNews = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields including image' });
     }
 
-    const productData = {
-      _id: new mongoose.Types.ObjectId(),
-      MainHeadline: MainHeadline.trim(),
-      Subheadline: Subheadline.trim(),
-      Description: Description.trim(),
-      image: req.file.path,
-      status: 'LatestNews',
-      date: new Date()
-    };
-
     const insertedProducts = [];
 
     for (const serviceId of serviceIds) {
@@ -387,13 +458,24 @@ exports.createProductToLatestNews = async (req, res) => {
           continue;
         }
 
+        const productData = {
+          _id: new mongoose.Types.ObjectId(), // ✅ Unique ID for each insert
+          MainHeadline: MainHeadline.trim(),
+          Subheadline: Subheadline.trim(),
+          Description: Description.trim(),
+          image: req.file.path,
+          status: 'LatestNews',
+          date: new Date()
+        };
+
         subcategory.products.push(productData);
         insertedProducts.push({
           serviceId,
           subcategoryId,
           ...productData
         });
-        console.log(`✅ Inserted product into subcategory ${subcategoryId} of service ${serviceId}`);
+
+        console.log(`✅ Inserted product into subcategory ${subcategoryId} of service ${serviceId} with ID ${productData._id}`);
       }
 
       await mainProduct.save();
