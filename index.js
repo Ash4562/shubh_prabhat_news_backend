@@ -15,7 +15,8 @@ app.use(cors({
         "https://shubprabhat-userside.onrender.com",
        "https://shubh-prabhat-zuep.vercel.app",
         "https://shubhprabhat-admin-panel-adhd.onrender.com",
-        "https://user-new.onrender.com/"
+        "https://user-new.onrender.com/",
+        "https://user-new.onrender.com"
  
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH','DELETE'],
