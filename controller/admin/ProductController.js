@@ -1027,9 +1027,9 @@ exports.getProductsBySubcategoryId = async (req, res) => {
 
 exports.addSubcategory = async (req, res) => {
   try {
-    const { serviceId, subcategoryName, date } = req.body;
+    const { serviceId, subcategoryName } = req.body;
 
-    if (!serviceId || !subcategoryName || !date) {
+    if (!serviceId || !subcategoryName ) {
       return res.status(400).json({ error: 'serviceId, subcategoryName, and date are required' });
     }
 
@@ -1039,7 +1039,7 @@ exports.addSubcategory = async (req, res) => {
       // Create with subcategory
       mainProduct = await Product.create({
         service: serviceId,
-        subcategories: [{ name: subcategoryName, date, products: [] }]
+        subcategories: [{ name: subcategoryName, products: [] }]
       });
     } else {
       const subcategoryExists = mainProduct.subcategories.some(
@@ -1053,7 +1053,7 @@ exports.addSubcategory = async (req, res) => {
       // ✅ Fix: include date here too
       mainProduct.subcategories.push({
         name: subcategoryName,
-        date: date,
+        // date: date,
         products: []
       });
 
