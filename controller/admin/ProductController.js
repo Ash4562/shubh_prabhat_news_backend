@@ -1157,7 +1157,10 @@ exports.getAllNew = async (req, res) => {
         const approvedProducts = [];
 
         for (const prod of subcat.products || []) {
-          if (prod.status === 'approved') {
+          if (
+            prod.status === 'approved' || prod.status === 'MainHeadlines' || prod.status === 'LatestNews'
+ 
+          ){
             const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo');
 
             const prodObj = prod.toObject();
