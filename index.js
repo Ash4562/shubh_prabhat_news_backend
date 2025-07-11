@@ -18,7 +18,8 @@ app.use(cors({
         "https://user-new.onrender.com/",
         "https://user-new.onrender.com",
       "  https://shubprabhat-userside2.onrender.com",
-      "https://shubh-prabhat-sgsj.vercel.app"
+      "https://shubh-prabhat-sgsj.vercel.app",
+      "https://shubprabhat-userside2.onrender.com"
 
  
     ],
