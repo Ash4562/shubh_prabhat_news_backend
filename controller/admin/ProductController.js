@@ -1453,7 +1453,7 @@ exports.renderMetaPreview = async (req, res) => {
     const headline = prod.MainHeadline || 'Read Latest News';
     const desc = prod.Subheadline || 'Check out this update.';
     const imageUrl = `${prod.image}`;
-    // const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
+    const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
 
     const html = `
 <!DOCTYPE html>
