@@ -1449,7 +1449,7 @@ exports.renderMetaPreview = async (req, res) => {
   const desc = prod.Subheadline || 'Check out this update.';
   const imageUrl = prod.image.startsWith("http") 
     ? prod.image 
-    : `${process.env.BASE_URL}/${prod.image}`; // ← Use Cloudinary URL directly
+    : `${prod.image}`; // ← Use Cloudinary URL directly
   const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
 
   const html = `
