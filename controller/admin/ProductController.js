@@ -1434,3 +1434,51 @@ exports.updateSubcategory = async (req, res) => {
     res.status(500).json({ error: 'Failed to update subcategory' });
   }
 };
+
+exports.renderMetaPreview = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const product = await Product.findOne(
+      { 'subcategories.products._id': productId },
+      { 'subcategories.products.$': 1 }
+    );
+
+    if (!product || !product.subcategories?.length) {
+      return res.status(404).send('Product not found');
+    }
+
+    const prod = product.subcategories[0].products[0];
+
+    const headline = prod.MainHeadline || 'Read Latest News';
+    const desc = prod.Subheadline || 'Check out this update.';
+    const imageUrl = `${process.env.BASE_URL}/${prod.image}`;
+    const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta property="og:title" content="${headline}" />
+  <meta property="og:description" content="${desc}" />
+  <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:url" content="${redirectUrl}" />
+  <meta property="og:type" content="website" />
+  <title>Redirecting...</title>
+  <script>
+    window.location.href = "${redirectUrl}";
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
+    `;
+
+    res.send(html);
+  } catch (error) {
+    console.error('OG Meta Preview Error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
