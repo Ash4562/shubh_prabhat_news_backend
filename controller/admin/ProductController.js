@@ -1435,64 +1435,49 @@ exports.updateSubcategory = async (req, res) => {
   }
 };
 
+// ✅ Good start
 exports.renderMetaPreview = async (req, res) => {
-  try {
-    const { productId } = req.params;
+  const { productId } = req.params;
 
-    const product = await Product.findOne(
-      { 'subcategories.products._id': productId },
-      { 'subcategories.products.$': 1 }
-    );
+  const product = await Product.findOne(
+    { 'subcategories.products._id': productId },
+    { 'subcategories.products.$': 1 }
+  );
 
-    if (!product || !product.subcategories?.length) {
-      return res.status(404).send('Product not found');
-    }
+  const prod = product.subcategories[0].products[0];
+  const headline = prod.MainHeadline || 'Read Latest News';
+  const desc = prod.Subheadline || 'Check out this update.';
+  const imageUrl = prod.image.startsWith("http") 
+    ? prod.image 
+    : `${process.env.BASE_URL}/${prod.image}`; // ← Use Cloudinary URL directly
+  const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
 
-    const prod = product.subcategories[0].products[0];
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta property="og:title" content="${headline}" />
+      <meta property="og:description" content="${desc}" />
+      <meta property="og:image" content="${imageUrl}" />
+      <meta property="og:url" content="${redirectUrl}" />
+      <meta property="og:type" content="website" />
+      
+      <!-- Twitter -->
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="${headline}" />
+      <meta name="twitter:description" content="${desc}" />
+      <meta name="twitter:image" content="${imageUrl}" />
 
-    const headline = prod.MainHeadline || 'Read Latest News';
-    const desc = prod.Subheadline || 'Check out this update.';
-    const imageUrl = prod.image?.startsWith("http")
-      ? prod.image
-      : `${process.env.BASE_URL}/${prod.image}`;
-    const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
-
-    const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>${headline}</title>
-  <meta name="description" content="${desc}" />
-
-  <!-- Facebook Meta Tags -->
-  <meta property="og:url" content="${redirectUrl}" />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="${headline}" />
-  <meta property="og:description" content="${desc}" />
-  <meta property="og:image" content="${imageUrl}" />
-
-  <!-- Twitter Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta property="twitter:domain" content="shubprabhat-userside2.onrender.com" />
-  <meta property="twitter:url" content="${redirectUrl}" />
-  <meta name="twitter:title" content="${headline}" />
-  <meta name="twitter:description" content="${desc}" />
-  <meta name="twitter:image" content="${imageUrl}" />
-
-  <script>
-    window.location.href = "${redirectUrl}";
-  </script>
-</head>
-<body>
-  <p>Redirecting...</p>
-</body>
-</html>
-    `;
-
-    res.send(html);
-  } catch (error) {
-    console.error('OG Meta Preview Error:', error);
-    res.status(500).send('Internal Server Error');
-  }
+      <title>${headline}</title>
+      <script>
+        setTimeout(() => window.location.href = "${redirectUrl}", 1000);
+      </script>
+    </head>
+    <body>
+      <p>Redirecting to article...</p>
+    </body>
+    </html>
+  `;
+  res.send(html);
 };
