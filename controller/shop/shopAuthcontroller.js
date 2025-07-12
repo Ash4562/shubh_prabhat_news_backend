@@ -46,7 +46,7 @@ exports.updateReporterStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!['approved', 'rejected'].includes(status)) {
+    if (!['approved', 'rejected','pending'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
@@ -138,7 +138,8 @@ exports.verifyOTP = async (req, res) => {
         address: reporter.address,
         isLogin: reporter.isLogin,
         isApproved: reporter.isApproved,
-        profileImage: reporter.profileImage,
+        ReporterProfile: reporter.ReporterProfile,
+        AadharCardImage: reporter.AadharCardImage,
         createdAt: reporter.createdAt,
         updatedAt: reporter.updatedAt
         // add more fields as needed

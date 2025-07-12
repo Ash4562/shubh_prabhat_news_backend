@@ -1161,7 +1161,7 @@ exports.getAllNew = async (req, res) => {
             prod.status === 'approved' || prod.status === 'MainHeadlines' || prod.status === 'LatestNews'
  
           ){
-            const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo');
+            const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo ReporterProfile');
 
             const prodObj = prod.toObject();
             prodObj.reporter = reporter;
