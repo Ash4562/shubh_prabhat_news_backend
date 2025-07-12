@@ -1452,7 +1452,9 @@ exports.renderMetaPreview = async (req, res) => {
 
     const headline = prod.MainHeadline || 'Read Latest News';
     const desc = prod.Subheadline || 'Check out this update.';
-    const imageUrl = `${process.env.BASE_URL}/${prod.image}`;
+    const imageUrl = prod.image?.startsWith("http")
+      ? prod.image
+      : `${process.env.BASE_URL}/${prod.image}`;
     const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
 
     const html = `
@@ -1460,12 +1462,24 @@ exports.renderMetaPreview = async (req, res) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>${headline}</title>
+  <meta name="description" content="${desc}" />
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="${redirectUrl}" />
+  <meta property="og:type" content="website" />
   <meta property="og:title" content="${headline}" />
   <meta property="og:description" content="${desc}" />
   <meta property="og:image" content="${imageUrl}" />
-  <meta property="og:url" content="${redirectUrl}" />
-  <meta property="og:type" content="website" />
-  <title>Redirecting...</title>
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta property="twitter:domain" content="shubprabhat-userside2.onrender.com" />
+  <meta property="twitter:url" content="${redirectUrl}" />
+  <meta name="twitter:title" content="${headline}" />
+  <meta name="twitter:description" content="${desc}" />
+  <meta name="twitter:image" content="${imageUrl}" />
+
   <script>
     window.location.href = "${redirectUrl}";
   </script>
