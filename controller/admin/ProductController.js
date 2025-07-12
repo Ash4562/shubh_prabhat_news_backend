@@ -1449,10 +1449,11 @@ exports.renderMetaPreview = async (req, res) => {
     }
 
     const prod = product.subcategories[0].products[0];
+    console.log(prod)
 
-    const headline = prod.MainHeadline || 'Read Latest News';
-    const desc = prod.Subheadline || 'Check out this update.';
-    const imageUrl = `${prod.image}`;
+    const headline = escapeHtml(prod.MainHeadline || 'Read Latest News');
+    const desc = escapeHtml(prod.Subheadline || 'Check out this update.');
+    const imageUrl = prod.image; // Direct Cloudinary URL assumed
     const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
 
     const html = `
@@ -1460,6 +1461,7 @@ exports.renderMetaPreview = async (req, res) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta property="og:title" content="${headline}" />
   <meta property="og:description" content="${desc}" />
   <meta property="og:image" content="${imageUrl}" />
@@ -1482,3 +1484,13 @@ exports.renderMetaPreview = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+// 🔐 Optional: Escape unsafe characters from HTML
+function escapeHtml(text) {
+  return text
+    ?.replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
