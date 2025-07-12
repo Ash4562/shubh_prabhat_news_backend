@@ -609,7 +609,7 @@ exports.updateProductStatusByProductId = async (req, res) => {
     const { productId } = req.params;
     const { status } = req.body;
 
-    if (!['pending', 'approved', 'rejected','MainHeadlines','LatestNews'].includes(status)) {
+    if (!['pending', 'approved', 'rejected', 'MainHeadlines', 'LatestNews'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
@@ -1029,7 +1029,7 @@ exports.addSubcategory = async (req, res) => {
   try {
     const { serviceId, subcategoryName } = req.body;
 
-    if (!serviceId || !subcategoryName ) {
+    if (!serviceId || !subcategoryName) {
       return res.status(400).json({ error: 'serviceId, subcategoryName, and date are required' });
     }
 
@@ -1159,8 +1159,8 @@ exports.getAllNew = async (req, res) => {
         for (const prod of subcat.products || []) {
           if (
             prod.status === 'approved' || prod.status === 'MainHeadlines' || prod.status === 'LatestNews'
- 
-          ){
+
+          ) {
             const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo ReporterProfile');
 
             const prodObj = prod.toObject();
@@ -1494,3 +1494,4 @@ function escapeHtml(text) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
