@@ -1454,7 +1454,7 @@ exports.renderMetaPreview = async (req, res) => {
     const headline = escapeHtml(prod.MainHeadline || 'Read Latest News');
     const desc = escapeHtml(prod.Subheadline || 'Check out this update.');
     const imageUrl = prod.image; // Direct Cloudinary URL assumed
-    const redirectUrl = `${process.env.CLIENT_URL}/#/home/reader/${productId}`;
+    const redirectUrl = `${process.env.CLIENT_URL}/home/reader/${productId}`;
 
     const html = `
 <!DOCTYPE html>
