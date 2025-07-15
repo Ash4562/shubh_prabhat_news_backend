@@ -41,29 +41,50 @@ exports.registerReporter = async (req, res) => {
     res.status(500).json({ error: 'Failed to register reporter' });
   }
 };
+
+
 exports.updateReporterStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, approvedFor } = req.body;
 
-    if (!['approved', 'rejected','pending'].includes(status)) {
+    // Validate status
+    if (status && !['approved', 'rejected', 'pending'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
+    // Validate approvedFor
+    if (approvedFor && !['Both', 'Blogs', 'News'].includes(approvedFor)) {
+      return res.status(400).json({ error: 'Invalid ApprovedFor value' });
+    }
+
+    // Prepare update object dynamically
+    const updateData = {};
+    if (status) updateData.isApproved = status;
+    if (approvedFor) updateData.ApprovedFor = approvedFor;
+
     const reporter = await Reporter.findByIdAndUpdate(
       id,
-      { isApproved: status },
+      updateData,
       { new: true }
     );
 
-    if (!reporter) return res.status(404).json({ error: 'Reporter not found' });
+    if (!reporter) {
+      return res.status(404).json({ error: 'Reporter not found' });
+    }
 
-    res.status(200).json({ message: `Reporter ${status} successfully`, reporter });
+    res.status(200).json({
+      message: `Reporter updated successfully`,
+      updatedFields: Object.keys(updateData),
+      reporter,
+    });
+
   } catch (error) {
     console.error('Status update error:', error);
-    res.status(500).json({ error: 'Failed to update status' });
+    res.status(500).json({ error: 'Failed to update reporter' });
   }
 };
+
 
 exports.login = async (req, res) => {
   try {
