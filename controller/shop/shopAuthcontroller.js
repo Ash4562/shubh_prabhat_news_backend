@@ -159,6 +159,7 @@ exports.verifyOTP = async (req, res) => {
         address: reporter.address,
         isLogin: reporter.isLogin,
         isApproved: reporter.isApproved,
+        ApprovedFor: reporter.ApprovedFor,
         ReporterProfile: reporter.ReporterProfile,
         AadharCardImage: reporter.AadharCardImage,
         createdAt: reporter.createdAt,
