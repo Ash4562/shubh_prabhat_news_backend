@@ -1435,26 +1435,105 @@ exports.updateSubcategory = async (req, res) => {
   }
 };
 
+// exports.renderMetaPreview = async (req, res) => {
+//   try {
+//     const { productId } = req.params;
+
+//     const product = await Product.findOne(
+//       { 'subcategories.products._id': productId },
+//       { 'subcategories.products.$': 1 }
+//     );
+
+//     if (!product || !product.subcategories?.length) {
+//       return res.status(404).send('Product not found');
+//     }
+
+//     const prod = product.subcategories[0].products[0];
+//     console.log(prod)
+
+//     const headline = escapeHtml(prod.MainHeadline || 'Read Latest News');
+//     const desc = escapeHtml(prod.Subheadline || 'Check out this update.');
+//     const imageUrl = prod.image; // Direct Cloudinary URL assumed
+//     const redirectUrl = `${process.env.CLIENT_URL}/home/reader/${productId}`;
+
+//     const html = `
+// <!DOCTYPE html>
+// <html lang="en">
+// <head>
+//   <meta charset="UTF-8" />
+//   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+//   <meta property="og:title" content="${headline}" />
+//   <meta property="og:description" content="${desc}" />
+//   <meta property="og:image" content="${imageUrl}" />
+//   <meta property="og:url" content="${redirectUrl}" />
+//   <meta property="og:type" content="website" />
+//   <title>Redirecting...</title>
+//   <script>
+//     window.location.href = "${redirectUrl}";
+//   </script>
+// </head>
+// <body>
+//   <p>Redirecting...</p>
+// </body>
+// </html>
+//     `;
+
+//     res.send(html);
+//   } catch (error) {
+//     console.error('OG Meta Preview Error:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// };
+
+// // 🔐 Optional: Escape unsafe characters from HTML
+// function escapeHtml(text) {
+//   return text
+//     ?.replace(/&/g, "&amp;")
+//     .replace(/</g, "&lt;")
+//     .replace(/>/g, "&gt;")
+//     .replace(/"/g, "&quot;")
+//     .replace(/'/g, "&#039;");
+// }
+
+function escapeHtml(text) {
+  return text
+    ?.replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 exports.renderMetaPreview = async (req, res) => {
   try {
     const { productId } = req.params;
+    const view = req.query.view || 'reader';
 
-    const product = await Product.findOne(
-      { 'subcategories.products._id': productId },
-      { 'subcategories.products.$': 1 }
-    );
+    // Find the product where productId exists in any subcategory
+    const productDoc = await Product.findOne({ 'subcategories.products._id': productId });
 
-    if (!product || !product.subcategories?.length) {
+    if (!productDoc) {
       return res.status(404).send('Product not found');
     }
 
-    const prod = product.subcategories[0].products[0];
-    console.log(prod)
+    // Search for the actual product inside the subcategories
+    let foundProduct = null;
+    for (const sub of productDoc.subcategories) {
+      const prod = sub.products.find((p) => p._id.toString() === productId);
+      if (prod) {
+        foundProduct = prod;
+        break;
+      }
+    }
 
-    const headline = escapeHtml(prod.MainHeadline || 'Read Latest News');
-    const desc = escapeHtml(prod.Subheadline || 'Check out this update.');
-    const imageUrl = prod.image; // Direct Cloudinary URL assumed
-    const redirectUrl = `${process.env.CLIENT_URL}/home/reader/${productId}`;
+    if (!foundProduct) {
+      return res.status(404).send('Product not found in subcategories');
+    }
+
+    const headline = escapeHtml(foundProduct.MainHeadline || 'Read Latest News');
+    const desc = escapeHtml(foundProduct.Subheadline || 'Check out this update.');
+    const imageUrl = foundProduct.image || 'https://example.com/default-image.jpg';
+    const redirectUrl = `${process.env.CLIENT_URL}/home/${view}/${productId}`;
 
     const html = `
 <!DOCTYPE html>
@@ -1471,9 +1550,13 @@ exports.renderMetaPreview = async (req, res) => {
   <script>
     window.location.href = "${redirectUrl}";
   </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0;url=${redirectUrl}" />
+    <p><a href="${redirectUrl}">Click here to view the news</a></p>
+  </noscript>
 </head>
 <body>
-  <p>Redirecting...</p>
+  <p>Redirecting to news...</p>
 </body>
 </html>
     `;
@@ -1484,14 +1567,3 @@ exports.renderMetaPreview = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
-
-// 🔐 Optional: Escape unsafe characters from HTML
-function escapeHtml(text) {
-  return text
-    ?.replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
