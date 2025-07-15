@@ -20,9 +20,14 @@ const ReporterSchema = new mongoose.Schema({
   contactNo: String,
   address: String,
   otp: String,
-  AadharCardImage:{type:String,required:true},
+  AadharCardImage:{type:String,required:true},  
   ReporterProfile:String,
   otpExpiry: Date,
+  ApprovedFor: {
+    type: String,
+    enum: ['Both', 'Blogs', 'News'],
+ 
+  },
   isApproved: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],

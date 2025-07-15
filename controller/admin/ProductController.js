@@ -1288,25 +1288,41 @@ exports.updateProductById = async (req, res) => {
     }
 
     let updatedProduct = null;
+    let updatedFields = [];
 
     for (let subcategory of productDoc.subcategories) {
       const product = subcategory.products.id(productId);
 
       if (product) {
-        if (MainHeadline) product.MainHeadline = MainHeadline.trim();
-        if (Subheadline) product.Subheadline = Subheadline.trim();
-        if (Description) product.Description = Description.trim();
-        if (req.file?.path) product.image = req.file.path;
+        if (MainHeadline) {
+          product.MainHeadline = MainHeadline.trim();
+          updatedFields.push("MainHeadline");
+        }
 
-        updatedProduct = product;
+        if (Subheadline) {
+          product.Subheadline = Subheadline.trim();
+          updatedFields.push("Subheadline");
+        }
+
+        if (Description) {
+          product.Description = Description.trim();
+          updatedFields.push("Description");
+        }
+
+        if (req.file?.path) {
+          product.image = req.file.path;
+          updatedFields.push("image");
+        }
 
         if (subcategoryName) {
           const trimmedName = subcategoryName.trim();
           if (subcategory.name !== trimmedName) {
             subcategory.name = trimmedName;
+            updatedFields.push("subcategoryName");
           }
         }
 
+        updatedProduct = product;
         break;
       }
     }
@@ -1319,6 +1335,7 @@ exports.updateProductById = async (req, res) => {
 
     res.status(200).json({
       message: "Product and subcategory updated successfully",
+      updatedFields,
       product: updatedProduct,
     });
   } catch (err) {
@@ -1326,6 +1343,7 @@ exports.updateProductById = async (req, res) => {
     res.status(500).json({ error: "Failed to update product" });
   }
 };
+
 
 
 
