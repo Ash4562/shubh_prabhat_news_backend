@@ -248,3 +248,60 @@ exports.getApprovedOffersByShop = async (req, res) => {
   }
 };
 // 
+
+function escapeHtml(text) {
+  return text
+    ?.replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+exports.renderMetaPreviewBlogs = async (req, res) => {
+  try {
+    const { id } = req.params; // ✅ fixed
+
+    const view = req.query.view || "reader";
+    const blog = await AddOffer.findById(id); // ✅ fixed
+
+    if (!blog) {
+      return res.status(404).send("Blog not found");
+    }
+
+    const headline = escapeHtml(blog.MainHeadline || "Read Latest News");
+    const desc = escapeHtml(blog.Subheadline || "Check out this update.");
+    const imageUrl = blog.image || "https://example.com/default-image.jpg";
+    const redirectUrl = `${process.env.CLIENT_URL}/home/${view}/${id}`;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:title" content="${headline}" />
+  <meta property="og:description" content="${desc}" />
+  <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:url" content="${redirectUrl}" />
+  <meta property="og:type" content="website" />
+  <title>Redirecting...</title>
+  <script>
+    window.location.href = "${redirectUrl}";
+  </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0;url=${redirectUrl}" />
+    <p><a href="${redirectUrl}">Click here to view the news</a></p>
+  </noscript>
+</head>
+<body>
+  <p>Redirecting to news...</p>
+</body>
+</html>
+    `;
+
+    res.send(html);
+  } catch (error) {
+    console.error("OG Meta Preview Error:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
