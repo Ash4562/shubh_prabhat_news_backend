@@ -1293,10 +1293,10 @@ exports.updateProductById = async (req, res) => {
       const product = subcategory.products.id(productId);
 
       if (product) {
-        if (MainHeadline) product.MainHeadline = MainHeadline.trim();
-        if (Subheadline) product.Subheadline = Subheadline.trim();
-        if (Description) product.Description = Description.trim();
-        if (req.file && req.file.path) product.image = req.file.path;
+        // if (MainHeadline) product.MainHeadline = MainHeadline.trim();
+        // if (Subheadline) product.Subheadline = Subheadline.trim();
+        // if (Description) product.Description = Description.trim();
+        // if (req.file && req.file.path) product.image = req.file.path;
 
         updatedProduct = product;
 
