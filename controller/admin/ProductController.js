@@ -1280,11 +1280,11 @@ exports.updateProductById = async (req, res) => {
     const { MainHeadline, Subheadline, Description, subcategoryName } = req.body;
 
     const productDoc = await Product.findOne({
-      "subcategories.products._id": productId
+      "subcategories.products._id": productId,
     });
 
     if (!productDoc) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({ error: "Product not found" });
     }
 
     let updatedProduct = null;
@@ -1293,15 +1293,18 @@ exports.updateProductById = async (req, res) => {
       const product = subcategory.products.id(productId);
 
       if (product) {
-        // if (MainHeadline) product.MainHeadline = MainHeadline.trim();
-        // if (Subheadline) product.Subheadline = Subheadline.trim();
-        // if (Description) product.Description = Description.trim();
-        // if (req.file && req.file.path) product.image = req.file.path;
+        if (MainHeadline) product.MainHeadline = MainHeadline.trim();
+        if (Subheadline) product.Subheadline = Subheadline.trim();
+        if (Description) product.Description = Description.trim();
+        if (req.file?.path) product.image = req.file.path;
 
         updatedProduct = product;
 
-        if (subcategoryName && subcategory.name !== subcategoryName.trim()) {
-          subcategory.name = subcategoryName.trim();
+        if (subcategoryName) {
+          const trimmedName = subcategoryName.trim();
+          if (subcategory.name !== trimmedName) {
+            subcategory.name = trimmedName;
+          }
         }
 
         break;
@@ -1309,21 +1312,21 @@ exports.updateProductById = async (req, res) => {
     }
 
     if (!updatedProduct) {
-      return res.status(404).json({ error: 'Product not found in subcategories' });
+      return res.status(404).json({ error: "Product not found in subcategories" });
     }
 
     await productDoc.save();
 
     res.status(200).json({
-      message: 'Product and subcategory updated successfully',
-      product: updatedProduct
+      message: "Product and subcategory updated successfully",
+      product: updatedProduct,
     });
-
   } catch (err) {
-    console.error('Update Product Error:', err);
-    res.status(500).json({ error: 'Failed to update product' });
+    console.error("Update Product Error:", err);
+    res.status(500).json({ error: "Failed to update product" });
   }
 };
+
 
 
 exports.deleteProductById = async (req, res) => {
