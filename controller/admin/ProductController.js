@@ -1142,6 +1142,51 @@ exports.getAllSubcategories = async (req, res) => {
 };
 // for users
 
+// exports.getAllNew = async (req, res) => {
+//   try {
+//     const products = await Product.find({}, 'subcategories');
+
+//     if (!products || products.length === 0) {
+//       return res.status(404).json({ message: 'No subcategories found' });
+//     }
+
+//     const allSubcategories = [];
+
+//     for (const product of products) {
+//       for (const subcat of product.subcategories || []) {
+//         const approvedProducts = [];
+
+//         for (const prod of subcat.products || []) {
+//           if (
+//             prod.status === 'approved' || prod.status === 'MainHeadlines' || prod.status === 'LatestNews'
+
+//           ) {
+//             const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo ReporterProfile');
+
+//             const prodObj = prod.toObject();
+//             prodObj.reporter = reporter;
+
+//             approvedProducts.push(prodObj);
+//           }
+//         }
+
+//         if (approvedProducts.length > 0) {
+//           allSubcategories.push({
+//             _id: subcat._id,
+//             name: subcat.name,
+//             date: subcat.date,
+//             products: approvedProducts
+//           });
+//         }
+//       }
+//     }
+
+//     res.status(200).json({ subcategories: allSubcategories });
+//   } catch (err) {
+//     console.error('Error fetching all subcategories:', err);
+//     res.status(500).json({ error: 'Failed to fetch all subcategories' });
+//   }
+// };
 exports.getAllNew = async (req, res) => {
   try {
     const products = await Product.find({}, 'subcategories');
@@ -1158,10 +1203,13 @@ exports.getAllNew = async (req, res) => {
 
         for (const prod of subcat.products || []) {
           if (
-            prod.status === 'approved' || prod.status === 'MainHeadlines' || prod.status === 'LatestNews'
-
+            prod.status === 'approved' ||
+            prod.status === 'MainHeadlines' ||
+            prod.status === 'LatestNews'
           ) {
-            const reporter = await Reporter.findById(prod.reporterId).select('ReporterName email contactNo ReporterProfile');
+            const reporter = await Reporter.findById(prod.reporterId).select(
+              'ReporterName email contactNo ReporterProfile'
+            );
 
             const prodObj = prod.toObject();
             prodObj.reporter = reporter;
@@ -1169,6 +1217,9 @@ exports.getAllNew = async (req, res) => {
             approvedProducts.push(prodObj);
           }
         }
+
+        // Sort products inside the subcategory
+        approvedProducts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (approvedProducts.length > 0) {
           allSubcategories.push({
@@ -1181,12 +1232,23 @@ exports.getAllNew = async (req, res) => {
       }
     }
 
+    // ✅ Use fallback sort based on date or ObjectId timestamp
+    const getSubcategoryDate = (subcat) => {
+      return subcat.date
+        ? new Date(subcat.date)
+        : new Date(parseInt(subcat._id.toString().substring(0, 8), 16) * 1000);
+    };
+
+    allSubcategories.sort((a, b) => getSubcategoryDate(a) - getSubcategoryDate(b));
+
     res.status(200).json({ subcategories: allSubcategories });
   } catch (err) {
     console.error('Error fetching all subcategories:', err);
     res.status(500).json({ error: 'Failed to fetch all subcategories' });
   }
 };
+
+
 
 
 exports.getAllPending = async (req, res) => {
