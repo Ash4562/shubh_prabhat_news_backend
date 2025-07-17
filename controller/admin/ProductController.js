@@ -1251,7 +1251,6 @@ exports.getAllNew = async (req, res) => {
 
 exports.skipCategories = async (req, res) => {
   try {
-    // Populate service name and select necessary fields
     const products = await Product.find()
       .populate('service', 'name')
       .select('service subcategories');
@@ -1260,19 +1259,19 @@ exports.skipCategories = async (req, res) => {
       return res.status(404).json({ message: 'No subcategories found' });
     }
 
+    // ✅ Filter only those with allowed service names
+    const allowedServiceNames = ['महाराष्ट्र', 'शहरे', 'राजकारण', 'विडीओ न्यूज'];
+    const filteredProducts = products.filter(
+      (p) => p.service && allowedServiceNames.includes(p.service.name)
+    );
+
     const allSubcategories = [];
 
-    for (const product of products) {
-      // ✅ Safe check in case service is null (possibly deleted)
-      const serviceInfo = product.service
-        ? {
-            _id: product.service._id,
-            name: product.service.name,
-          }
-        : {
-            _id: null,
-            name: 'Unknown Service',
-          };
+    for (const product of filteredProducts) {
+      const serviceInfo = {
+        _id: product.service._id,
+        name: product.service.name,
+      };
 
       for (const subcat of product.subcategories || []) {
         const approvedProducts = [];
@@ -1294,7 +1293,6 @@ exports.skipCategories = async (req, res) => {
           }
         }
 
-        // Sort products within each subcategory
         approvedProducts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (approvedProducts.length > 0) {
@@ -1302,14 +1300,13 @@ exports.skipCategories = async (req, res) => {
             _id: subcat._id,
             name: subcat.name,
             date: subcat.date,
-            service: serviceInfo, // ✅ Include service info with each subcategory
+            service: serviceInfo,
             products: approvedProducts,
           });
         }
       }
     }
 
-    // Sort all subcategories by date or ObjectId timestamp
     const getSubcategoryDate = (subcat) => {
       return subcat.date
         ? new Date(subcat.date)
@@ -1324,6 +1321,7 @@ exports.skipCategories = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch all subcategories' });
   }
 };
+
 
 
 exports.getAllPending = async (req, res) => {
