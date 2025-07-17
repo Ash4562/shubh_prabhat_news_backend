@@ -20,7 +20,8 @@ app.use(cors({
       "  https://shubprabhat-userside2.onrender.com",
       "https://shubh-prabhat-sgsj.vercel.app",
       "https://shubprabhat-userside2.onrender.com",
-      "https://shubprabhat-userside3.onrender.com"
+      "https://shubprabhat-userside3.onrender.com",
+      "https://shubh-prabhat.vercel.app"
 
  
     ],
