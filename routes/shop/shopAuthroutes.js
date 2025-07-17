@@ -21,7 +21,7 @@
 
 
 const express = require('express');
-const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters, deleteReporter } = require('../../controller/shop/shopAuthcontroller');
+const { registerReporter, updateReporterStatus, login, verifyOTP, getAllReporters, getReporterById, logoutReporter, getAllPendingReporters, deleteReporter, updateReporterProfile } = require('../../controller/shop/shopAuthcontroller');
 const upload = require('../../middleware/multer');
 const router = express.Router();
 
@@ -35,6 +35,13 @@ router.post(
         { name: 'AadharCardImage', maxCount: 1 },
         { name: 'ReporterProfile', maxCount: 1 }
       ]),registerReporter
+  );
+router.put(
+    '/updateProfile/:id',
+    upload.fields([
+        { name: 'AadharCardImage', maxCount: 1 },
+        { name: 'ReporterProfile', maxCount: 1 }
+      ]),updateReporterProfile
   );
 
 // Admin approval (change isApproved to 'approved' or 'rejected')

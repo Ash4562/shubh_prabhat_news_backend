@@ -263,6 +263,45 @@ exports.deleteReporter = async (req, res) => {
   }
 };
 
+exports.updateReporterProfile = async (req, res) => {
+  try {
+    const reporterId = req.params.id; // ID in URL
+    const { ReporterName, email, contactNo, address } = req.body;
+
+    const reporter = await Reporter.findById(reporterId);
+    if (!reporter) {
+      return res.status(404).json({ error: 'Reporter not found' });
+    }
+
+    // Upload new AadharCardImage if provided
+    if (req.files?.AadharCardImage?.[0]) {
+      const aadharUpload = await cloudinary.uploader.upload(req.files.AadharCardImage[0].path);
+      reporter.AadharCardImage = aadharUpload.secure_url;
+    }
+
+    // Upload new ReporterProfile if provided
+    if (req.files?.ReporterProfile?.[0]) {
+      const profileUpload = await cloudinary.uploader.upload(req.files.ReporterProfile[0].path);
+      reporter.ReporterProfile = profileUpload.secure_url;
+    }
+
+    // Update other fields if provided
+    if (ReporterName) reporter.ReporterName = ReporterName;
+    if (email) reporter.email = email.toLowerCase().trim();
+    if (contactNo) reporter.contactNo = contactNo;
+    if (address) reporter.address = address;
+
+    await reporter.save();
+
+    res.status(200).json({
+      message: 'Reporter profile updated successfully',
+      reporter,
+    });
+  } catch (error) {
+    console.error('Update Profile Error:', error);
+    res.status(500).json({ error: 'Failed to update reporter profile' });
+  }
+};
 
 
 
