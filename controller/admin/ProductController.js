@@ -1249,6 +1249,81 @@ exports.getAllNew = async (req, res) => {
 };
 
 
+exports.skipCategories = async (req, res) => {
+  try {
+    // Populate service name and select necessary fields
+    const products = await Product.find()
+      .populate('service', 'name')
+      .select('service subcategories');
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: 'No subcategories found' });
+    }
+
+    const allSubcategories = [];
+
+    for (const product of products) {
+      // ✅ Safe check in case service is null (possibly deleted)
+      const serviceInfo = product.service
+        ? {
+            _id: product.service._id,
+            name: product.service.name,
+          }
+        : {
+            _id: null,
+            name: 'Unknown Service',
+          };
+
+      for (const subcat of product.subcategories || []) {
+        const approvedProducts = [];
+
+        for (const prod of subcat.products || []) {
+          if (
+            prod.status === 'approved' ||
+            prod.status === 'MainHeadlines' ||
+            prod.status === 'LatestNews'
+          ) {
+            const reporter = await Reporter.findById(prod.reporterId).select(
+              'ReporterName email contactNo ReporterProfile'
+            );
+
+            const prodObj = prod.toObject();
+            prodObj.reporter = reporter;
+
+            approvedProducts.push(prodObj);
+          }
+        }
+
+        // Sort products within each subcategory
+        approvedProducts.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        if (approvedProducts.length > 0) {
+          allSubcategories.push({
+            _id: subcat._id,
+            name: subcat.name,
+            date: subcat.date,
+            service: serviceInfo, // ✅ Include service info with each subcategory
+            products: approvedProducts,
+          });
+        }
+      }
+    }
+
+    // Sort all subcategories by date or ObjectId timestamp
+    const getSubcategoryDate = (subcat) => {
+      return subcat.date
+        ? new Date(subcat.date)
+        : new Date(parseInt(subcat._id.toString().substring(0, 8), 16) * 1000);
+    };
+
+    allSubcategories.sort((a, b) => getSubcategoryDate(a) - getSubcategoryDate(b));
+
+    res.status(200).json({ subcategories: allSubcategories });
+  } catch (err) {
+    console.error('Error fetching all subcategories:', err);
+    res.status(500).json({ error: 'Failed to fetch all subcategories' });
+  }
+};
 
 
 exports.getAllPending = async (req, res) => {
