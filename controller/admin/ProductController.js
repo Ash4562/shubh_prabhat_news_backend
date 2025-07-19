@@ -1260,7 +1260,7 @@ exports.skipCategories = async (req, res) => {
     }
 
     // ✅ Filter only those with allowed service names
-    const allowedServiceNames = ['महाराष्ट्र', 'शहरे', 'राजकारण', 'विडीओ न्यूज'];
+    const allowedServiceNames = ['महाराष्ट्र', 'शहरे', 'राजकारण', 'विडीओ न्यूज','क्रीडा'];
     const filteredProducts = products.filter(
       (p) => p.service && allowedServiceNames.includes(p.service.name)
     );
@@ -1370,22 +1370,6 @@ exports.getAllPending = async (req, res) => {
 };
 
 
-
-// 📥 Get All Products by Service ID
-// exports.getProductsByService = async (req, res) => {
-//   try {
-//     const { serviceId } = req.params;
-//     const product = await Product.findOne({ service: serviceId });
-
-//     if (!product) {
-//       return res.status(404).json({ message: 'No products found for this service' });
-//     }
-
-//     res.status(200).json({ product });
-//   } catch (err) {
-//     res.status(500).json({ error: 'Failed to fetch products' });
-//   }
-// };
 
 exports.getProductsByService = async (req, res) => {
   try {

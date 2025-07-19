@@ -57,6 +57,6 @@ router.get('/all', getAllReporters);
 router.get('/getAllPendingReporters', getAllPendingReporters);
 router.get('/:id', getReporterById);
 router.post('/logout', logoutReporter);
-
+// /reporter/auth/:id
 
 module.exports = router;
