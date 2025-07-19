@@ -87,12 +87,11 @@ exports.updateReporterStatus = async (req, res) => {
 
 
 exports.login = async (req, res) => {
+  const { contactNo } = req.body;
   try {
-    const { email } = req.body;
 
-    if (!email) return res.status(400).json({ message: 'Email is required' });
-
-    const reporter = await Reporter.findOne({ email: email.toLowerCase().trim() });
+    const reporter = await Reporter.findOne({ contactNo });
+    if (!reporter) return res.status(404).json({ error: 'Mobile number not found' });
 
     if (!reporter) return res.status(404).json({ message: 'Reporter not found' });
 
@@ -107,7 +106,7 @@ exports.login = async (req, res) => {
     reporter.otpExpiry = new Date(otpExpiry);
     await reporter.save();
 
-    await sendOTP(email, otp); // ✅ your custom util logic
+    await sendOTP(contactNo, otp);
 
     res.status(200).json({ message: 'OTP sent', reporterId: reporter._id });
   } catch (error) {
