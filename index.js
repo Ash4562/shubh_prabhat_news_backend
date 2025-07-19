@@ -1,10 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
+const helmet = require('helmet');
 require('dotenv').config();
 // require('./middleware/cron/autoDeleteGallery')
 const app = express();
-
+app.use(helmet({
+  contentSecurityPolicy: false // ✅ place it right here
+}));
 app.use(express.json());
 app.use(cors({
     origin: [
