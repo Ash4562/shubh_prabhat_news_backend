@@ -11,6 +11,10 @@ app.use(helmet({
 app.use(express.json());
 app.use(cors({
     origin: [
+      "https://shubhprabhat.co.in",
+      "https://shubhprabhat.co.in",
+      "https://reporter.shubhprabhat.co.in",
+      "https://admin.shubhprabhat.co.in",
         "http://localhost:5173",
         "http://localhost:5174",
         "https://shubhprabhat-admin-panel.onrender.com",
