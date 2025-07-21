@@ -18,8 +18,7 @@ app.use(cors({
         "http://localhost:5173",
         "http://localhost:5174",
         "https://shubhprabhat-admin-panel.onrender.com",
-        "https://shubprabhat-userside.onrender.com/",
-        "https://shubprabhat-userside.onrender.com",
+    
        "https://shubh-prabhat-zuep.vercel.app",
         "https://shubhprabhat-admin-panel-adhd.onrender.com",
         "https://user-new.onrender.com/",
