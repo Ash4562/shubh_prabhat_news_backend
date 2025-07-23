@@ -74,7 +74,7 @@ exports.verifyOtp = async (req, res) => {
       user.otpExpiry = null;
       await user.save();
 
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_KEY, { expiresIn: '1d' });
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_KEY, { expiresIn: '7d' });
       return res.status(200).json({ message: 'Login successful', token, user });
     } else {
       // For registration flow

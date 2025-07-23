@@ -136,7 +136,7 @@ exports.verifyOTP = async (req, res) => {
     await reporter.save();
 
     // Generate token
-    const token = jwt.sign({ id: reporterId }, process.env.JWT_KEY, { expiresIn: '1d' });
+    const token = jwt.sign({ id: reporterId }, process.env.JWT_KEY, { expiresIn: '7d' });
 
     // Set cookie if needed
     res.cookie('token', token, {
