@@ -118,4 +118,11 @@ const ProductSchema = new mongoose.Schema({
   ],
 }, { timestamps: true });
 
+// In MongoDB shell or through your application
+// db.products.createIndex({ "subcategories.products.status": 1 });
+// db.products.createIndex({ "subcategories.products.reporterId": 1 });
+// db.products.createIndex({ "subcategories.products.date": -1 });
+// db.products.createIndex({ "subcategories.0": 1 }); // For filtering products with subcategories
+// db.reporters.createIndex({ "_id": 1 }); // Usually exists by default
+
 module.exports = mongoose.model('Product', ProductSchema);

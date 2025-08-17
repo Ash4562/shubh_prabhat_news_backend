@@ -1192,32 +1192,36 @@ exports.getAllSubcategories = async (req, res) => {
 // };
 exports.getAllNew = async (req, res) => {
   try {
-    const products = await Product.find({}, 'subcategories');
+    // Get all reporters in one query first
+    const reporters = await Reporter.find({}, 'ReporterName email contactNo ReporterProfile').lean();
+    const reporterMap = new Map(reporters.map(r => [r._id.toString(), r]));
+
+    // Get products with lean() and only subcategories field
+    // Filter out products without subcategories at database level
+    const products = await Product.find(
+      { 'subcategories.0': { $exists: true } }, 
+      'subcategories'
+    ).lean();
 
     if (!products || products.length === 0) {
       return res.status(404).json({ message: 'No subcategories found' });
     }
 
     const allSubcategories = [];
+    const approvedStatuses = new Set(['approved', 'MainHeadlines', 'LatestNews']);
 
     for (const product of products) {
       for (const subcat of product.subcategories || []) {
         const approvedProducts = [];
 
         for (const prod of subcat.products || []) {
-          if (
-            prod.status === 'approved' ||
-            prod.status === 'MainHeadlines' ||
-            prod.status === 'LatestNews'
-          ) {
-            const reporter = await Reporter.findById(prod.reporterId).select(
-              'ReporterName email contactNo ReporterProfile'
-            );
-
-            const prodObj = prod.toObject();
-            prodObj.reporter = reporter;
-
-            approvedProducts.push(prodObj);
+          if (approvedStatuses.has(prod.status)) {
+            const reporter = reporterMap.get(prod.reporterId?.toString()) || null;
+            
+            approvedProducts.push({
+              ...prod,
+              reporter: reporter
+            });
           }
         }
 
@@ -1250,7 +1254,6 @@ exports.getAllNew = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch all subcategories' });
   }
 };
-
 
 exports.skipCategories = async (req, res) => {
   try {

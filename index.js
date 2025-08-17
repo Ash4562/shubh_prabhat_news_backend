@@ -14,6 +14,9 @@ app.use(cors({
       "https://shubhprabhat.co.in",
       "https://shubhprabhat.co.in",
       "https://reporter.shubhprabhat.co.in",
+      "www.shubhprabhat.co.in",
+      "www.reporter.shubhprabhat.co.in",
+      "www.admin.shubhprabhat.co.in",
       "https://admin.shubhprabhat.co.in",
         "http://localhost:5173",
         "http://localhost:5174",
@@ -34,6 +37,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'PATCH','DELETE'],
     credentials: true,
 }));
+
+const db = mongoose.connection.db;
 app.use("/news/contactus", require("./routes/conatct/ContantusRoutes"));
 app.use("/shop/pickup", require("./routes/conatct/PickupRoutes"));
 // reporter
