@@ -14,7 +14,9 @@ app.use((req, res, next) => {
     'Pragma': 'no-cache',
     'Expires': '0',
   });
+  next();
 });
+
 app.use(express.json());
 app.use(cors({
     origin: [
