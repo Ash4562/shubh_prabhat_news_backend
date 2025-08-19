@@ -4,6 +4,7 @@ const AddOffer = require('../../models/admin/AddOfferr');
 const cloudinary = require('../../utils/cloudinary');
 
 
+
 exports.getAlloffer = async (req, res) => {
   try {
     // Sab offers lao, bina populate kiye
@@ -310,14 +311,51 @@ exports.renderMetaPreviewBlogs = async (req, res) => {
 };
 
 
+// exports.likeNews = async (req, res) => {
+//   try {
+//     const { offerId } = req.params;
+//     const { userId } = req.body;
+
+//     if (!userId) {
+//       return res.status(400).json({ error: 'userId is required' });
+//     }
+
+//     if (!mongoose.Types.ObjectId.isValid(offerId)) {
+//       return res.status(400).json({ error: 'Invalid offerId' });
+//     }
+
+//     const offer = await AddOffer.findById(offerId);
+//     if (!offer) {
+//       return res.status(404).json({ error: 'Offer not found' });
+//     }
+
+//     const userIndex = offer.LikeBy.indexOf(userId);
+
+//     if (userIndex === -1) {
+//       // Not liked yet → add like
+//       offer.LikeBy.push(userId);
+//     } else {
+//       // Already liked → remove like
+//       offer.LikeBy.splice(userIndex, 1);
+//     }
+
+//     await offer.save();
+
+//     res.status(200).json({
+//       message: userIndex === -1 ? 'Liked successfully' : 'Unliked successfully',
+//       likeCount: offer.LikeBy.length,
+//       likedByUser: userIndex === -1
+//     });
+
+//   } catch (error) {
+//     console.error('Like news error:', error);
+//     res.status(500).json({ error: 'Something went wrong' });
+//   }
+// };
+
 exports.likeNews = async (req, res) => {
   try {
-    const { offerId } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId is required' });
-    }
+    const { offerId } = req.body; // ✅ ab sirf body se offerId lenge
 
     if (!mongoose.Types.ObjectId.isValid(offerId)) {
       return res.status(400).json({ error: 'Invalid offerId' });
@@ -328,22 +366,15 @@ exports.likeNews = async (req, res) => {
       return res.status(404).json({ error: 'Offer not found' });
     }
 
-    const userIndex = offer.LikeBy.indexOf(userId);
-
-    if (userIndex === -1) {
-      // Not liked yet → add like
-      offer.LikeBy.push(userId);
-    } else {
-      // Already liked → remove like
-      offer.LikeBy.splice(userIndex, 1);
-    }
+    // ✅ har request pe offerId ko LikeBy array me add karenge (duplicates allowed)
+    offer.LikeBy.push(offerId);
 
     await offer.save();
 
     res.status(200).json({
-      message: userIndex === -1 ? 'Liked successfully' : 'Unliked successfully',
+      message: 'Offer liked successfully',
       likeCount: offer.LikeBy.length,
-      likedByUser: userIndex === -1
+      LikeBy: offer.LikeBy
     });
 
   } catch (error) {
@@ -351,6 +382,7 @@ exports.likeNews = async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 };
+
 
 
 exports.unlikeNews = async (req, res) => {
@@ -386,14 +418,45 @@ exports.unlikeNews = async (req, res) => {
   }
 };
 
+// exports.viewNews = async (req, res) => {
+//   try {
+//     const { offerId } = req.params;
+//     const { userId } = req.body;
+
+//     if (!userId) {
+//       return res.status(400).json({ error: 'userId is required' });
+//     }
+
+//     if (!mongoose.Types.ObjectId.isValid(offerId)) {
+//       return res.status(400).json({ error: 'Invalid offerId' });
+//     }
+
+//     const offer = await AddOffer.findById(offerId);
+//     if (!offer) {
+//       return res.status(404).json({ error: 'Offer not found' });
+//     }
+
+//     // Push view only once
+//     if (!offer.ViewBy.includes(userId)) {
+//       offer.ViewBy.push(userId);
+//       await offer.save();
+//     }
+
+//     res.status(200).json({
+//       message: 'Offer viewed successfully',
+//       viewCount: offer.ViewBy.length
+//     });
+//   } catch (error) {
+//     console.error('View offer error:', error);
+//     res.status(500).json({ error: 'Failed to record view' });
+//   }
+// };
+
+
+
 exports.viewNews = async (req, res) => {
   try {
-    const { offerId } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId is required' });
-    }
+    const { offerId } = req.body; // ✅ ab sirf body se offerId lenge
 
     if (!mongoose.Types.ObjectId.isValid(offerId)) {
       return res.status(400).json({ error: 'Invalid offerId' });
@@ -404,15 +467,15 @@ exports.viewNews = async (req, res) => {
       return res.status(404).json({ error: 'Offer not found' });
     }
 
-    // Push view only once
-    if (!offer.ViewBy.includes(userId)) {
-      offer.ViewBy.push(userId);
-      await offer.save();
-    }
+    // ✅ har request pe offerId ko ViewBy array me add karenge (duplicates allowed)
+    offer.ViewBy.push(offerId);
+
+    await offer.save();
 
     res.status(200).json({
       message: 'Offer viewed successfully',
-      viewCount: offer.ViewBy.length
+      viewCount: offer.ViewBy.length,
+      ViewBy: offer.ViewBy
     });
   } catch (error) {
     console.error('View offer error:', error);
